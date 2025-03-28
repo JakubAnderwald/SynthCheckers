@@ -1,0 +1,114 @@
+import React, { useRef } from 'react';
+import { useFrame } from '@react-three/fiber';
+import * as THREE from 'three';
+import { useTexture } from '@react-three/drei';
+import { Piece as PieceType } from '@/lib/checkers/types';
+import { colors, getThreeColor } from '@/lib/theme/colors';
+
+interface PieceProps {
+  piece: PieceType;
+  onClick: () => void;
+}
+
+const Piece: React.FC<PieceProps> = ({ piece, onClick }) => {
+  const meshRef = useRef<THREE.Mesh>(null);
+  const glowRef = useRef<THREE.Mesh>(null);
+  const woodTexture = useTexture('/textures/wood.jpg');
+  
+  // Configure texture
+  woodTexture.wrapS = woodTexture.wrapT = THREE.RepeatWrapping;
+  woodTexture.repeat.set(1, 1);
+  
+  // Animation for the piece
+  useFrame(({ clock }) => {
+    if (meshRef.current) {
+      // If selected, make it hover
+      if (piece.isSelected) {
+        meshRef.current.position.y = 0.3 + Math.sin(clock.getElapsedTime() * 5) * 0.05;
+      } else {
+        meshRef.current.position.y = 0.15;
+      }
+      
+      // Subtle rotation animation
+      meshRef.current.rotation.y = clock.getElapsedTime() * 0.2;
+    }
+    
+    // Glow animation
+    if (glowRef.current) {
+      if (piece.isSelected) {
+        glowRef.current.material.opacity = 0.6 + Math.sin(clock.getElapsedTime() * 4) * 0.2;
+        glowRef.current.scale.setScalar(1.3 + Math.sin(clock.getElapsedTime() * 3) * 0.1);
+      } else {
+        glowRef.current.material.opacity = 0.3 + Math.sin(clock.getElapsedTime() * 2) * 0.1;
+        glowRef.current.scale.setScalar(1.1);
+      }
+    }
+  });
+  
+  // Determine piece color
+  const pieceColor = piece.color === 'red' ? colors.piece.red : colors.piece.blue;
+  const glowColor = piece.color === 'red' ? colors.piece.redGlow : colors.piece.blueGlow;
+  const selectColor = piece.isSelected ? colors.piece.select : pieceColor;
+  const selectGlowColor = piece.isSelected ? colors.piece.selectGlow : glowColor;
+  
+  // Convert hex colors to THREE.js colors
+  const threeColor = getThreeColor(selectColor);
+  const threeGlowColor = getThreeColor(selectGlowColor);
+  
+  // Position based on the piece's position
+  const position: [number, number, number] = [piece.position.col, 0, piece.position.row];
+  
+  return (
+    <group position={position}>
+      {/* Glow effect beneath the piece */}
+      <mesh 
+        ref={glowRef}
+        position={[0, 0.05, 0]}
+        rotation={[-Math.PI / 2, 0, 0]}
+      >
+        <circleGeometry args={[0.4, 32]} />
+        <meshBasicMaterial
+          color={new THREE.Color(...threeGlowColor)}
+          transparent
+          opacity={0.3}
+          depthWrite={false}
+        />
+      </mesh>
+      
+      {/* The actual checker piece */}
+      <mesh
+        ref={meshRef}
+        position={[0, 0.15, 0]}
+        onClick={onClick}
+        castShadow
+        receiveShadow
+      >
+        <cylinderGeometry args={[0.35, 0.35, 0.1, 32]} />
+        <meshStandardMaterial
+          color={new THREE.Color(...threeColor)}
+          metalness={0.7}
+          roughness={0.2}
+          map={woodTexture}
+        />
+      </mesh>
+      
+      {/* If it's a king, add a crown or second piece on top */}
+      {piece.type === 'king' && (
+        <mesh
+          position={[0, 0.25, 0]}
+          castShadow
+        >
+          <cylinderGeometry args={[0.25, 0.25, 0.1, 32]} />
+          <meshStandardMaterial
+            color={new THREE.Color(...threeColor)}
+            metalness={0.8}
+            roughness={0.1}
+            map={woodTexture}
+          />
+        </mesh>
+      )}
+    </group>
+  );
+};
+
+export default Piece;
