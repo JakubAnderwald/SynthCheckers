@@ -179,8 +179,11 @@ const Board: React.FC = () => {
             isKeyboardFocused={keyboardFocus.row === row && keyboardFocus.col === col}
             isHovered={hoveredSquare?.row === row && hoveredSquare?.col === col}
             onSquareClick={() => {
+              console.log(`Square clicked: row=${row}, col=${col}`);
+              
               // If this is a valid move for the selected piece, move there
               if (selectedPiece && validMoves.some(move => move.row === row && move.col === col)) {
+                console.log('Valid move detected! Moving piece...');
                 movePiece({ row, col });
               } else {
                 // Try to select a piece at this position
@@ -189,11 +192,14 @@ const Board: React.FC = () => {
                 );
                 
                 if (pieceAtPosition) {
+                  console.log('Piece found at position - selecting piece:', pieceAtPosition);
                   selectPiece(pieceAtPosition);
-                } else if (selectedPiece) {
-                  // Clicking on an empty square deselects the current piece
-                  resetSelection();
-                }
+                } 
+                // Commented out the auto-deselection on mobile to prevent accidental deselection
+                // else if (selectedPiece) {
+                //   // Clicking on an empty square deselects the current piece
+                //   resetSelection();
+                // }
               }
             }}
             onSquareHover={() => setHoveredSquare({ row, col })}

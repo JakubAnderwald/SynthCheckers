@@ -12,7 +12,7 @@ interface PieceProps {
 
 const Piece: React.FC<PieceProps> = ({ piece, onClick }) => {
   const meshRef = useRef<THREE.Mesh>(null);
-  const glowRef = useRef<THREE.Mesh>(null);
+  const glowMaterialRef = useRef<THREE.MeshBasicMaterial>(null);
   const woodTexture = useTexture('/textures/wood.jpg');
   
   // Configure texture
@@ -34,13 +34,11 @@ const Piece: React.FC<PieceProps> = ({ piece, onClick }) => {
     }
     
     // Glow animation
-    if (glowRef.current) {
+    if (glowMaterialRef.current) {
       if (piece.isSelected) {
-        glowRef.current.material.opacity = 0.6 + Math.sin(clock.getElapsedTime() * 4) * 0.2;
-        glowRef.current.scale.setScalar(1.3 + Math.sin(clock.getElapsedTime() * 3) * 0.1);
+        glowMaterialRef.current.opacity = 0.6 + Math.sin(clock.getElapsedTime() * 4) * 0.2;
       } else {
-        glowRef.current.material.opacity = 0.3 + Math.sin(clock.getElapsedTime() * 2) * 0.1;
-        glowRef.current.scale.setScalar(1.1);
+        glowMaterialRef.current.opacity = 0.3 + Math.sin(clock.getElapsedTime() * 2) * 0.1;
       }
     }
   });
@@ -62,12 +60,12 @@ const Piece: React.FC<PieceProps> = ({ piece, onClick }) => {
     <group position={position}>
       {/* Glow effect beneath the piece */}
       <mesh 
-        ref={glowRef}
         position={[0, 0.05, 0]}
         rotation={[-Math.PI / 2, 0, 0]}
       >
         <circleGeometry args={[0.4, 32]} />
         <meshBasicMaterial
+          ref={glowMaterialRef}
           color={new THREE.Color(...threeGlowColor)}
           transparent
           opacity={0.3}
@@ -80,12 +78,22 @@ const Piece: React.FC<PieceProps> = ({ piece, onClick }) => {
         ref={meshRef}
         position={[0, 0.15, 0]}
         onClick={(e) => {
-          e.stopPropagation();
+          e.stopPropagation(); 
+          console.log('Piece clicked:', piece.id, 'Color:', piece.color, 'Position:', piece.position);
           onClick();
         }}
         onPointerDown={(e) => {
           // Ensure we capture the pointer on mobile
           e.stopPropagation();
+        }}
+        onPointerUp={(e) => {
+          // Handle pointer up events on mobile
+          console.log('Piece pointer up:', piece.id);
+          e.stopPropagation();
+          // Delay to ensure it's a deliberate tap and not a quick touch
+          setTimeout(() => {
+            onClick();
+          }, 50);
         }}
         castShadow
         receiveShadow

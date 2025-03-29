@@ -63,10 +63,20 @@ const Square: React.FC<SquareProps> = ({
       rotation={[-Math.PI / 2, 0, 0]}
       onClick={(e) => {
         e.stopPropagation();
-        onSquareClick();
+        console.log('Square clicked:', position);
+        // Add a small delay to ensure click is registered after any pointer events
+        setTimeout(() => {
+          onSquareClick();
+        }, 50);
       }}
       onPointerDown={(e) => {
         // Ensure we capture the pointer on mobile
+        console.log('Square pointer down:', position);
+        e.stopPropagation();
+      }}
+      onPointerUp={(e) => {
+        // Handle pointer up events as clicks on mobile
+        console.log('Square pointer up:', position);
         e.stopPropagation();
       }}
       onPointerOver={(e) => {
