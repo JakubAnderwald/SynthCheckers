@@ -1,6 +1,6 @@
 import { Canvas } from "@react-three/fiber";
 import { Suspense, useEffect, useState } from "react";
-import { KeyboardControls } from "@react-three/drei";
+import { KeyboardControls, OrbitControls } from "@react-three/drei";
 import { useAudio } from "./lib/stores/useAudio";
 import { useCheckersStore } from "./lib/stores/useCheckersStore";
 import "@fontsource/inter";
@@ -67,9 +67,10 @@ function App() {
     };
   }, [setBackgroundMusic, setHitSound, setSuccessSound]);
 
-  // Adjust camera position for mobile
-  const cameraPosition: [number, number, number] = isMobile ? [0, 12, 9] : [0, 10, 8];
-  const cameraFov = isMobile ? 55 : 45;
+  // Adjust camera position for mobile with a more top-down view
+  const cameraPosition: [number, number, number] = isMobile ? [0, 20, 0.1] : [0, 10, 8];
+  const cameraFov = isMobile ? 40 : 45;
+  const targetPosition = [3.5, 0, 3.5];
 
   return (
     <div className="game-container">
@@ -94,6 +95,17 @@ function App() {
               >
                 <color attach="background" args={["#0f0a2a"]} />
                 <fog attach="fog" args={["#0f0a2a", 10, 30]} />
+                
+                {/* Camera Controls */}
+                {isMobile ? (
+                  <OrbitControls 
+                    enableZoom={true}
+                    enablePan={false}
+                    minPolarAngle={0}
+                    maxPolarAngle={Math.PI / 2.5}
+                    target={targetPosition}
+                  />
+                ) : null}
                 
                 {/* Lighting */}
                 <Lighting />
