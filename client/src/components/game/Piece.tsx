@@ -79,7 +79,14 @@ const Piece: React.FC<PieceProps> = ({ piece, onClick }) => {
       <mesh
         ref={meshRef}
         position={[0, 0.15, 0]}
-        onClick={onClick}
+        onClick={(e) => {
+          e.stopPropagation();
+          onClick();
+        }}
+        onPointerDown={(e) => {
+          // Ensure we capture the pointer on mobile
+          e.stopPropagation();
+        }}
         castShadow
         receiveShadow
       >

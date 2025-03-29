@@ -61,9 +61,22 @@ const Square: React.FC<SquareProps> = ({
     <mesh
       position={position}
       rotation={[-Math.PI / 2, 0, 0]}
-      onClick={onSquareClick}
-      onPointerOver={onSquareHover}
-      onPointerOut={onSquareUnhover}
+      onClick={(e) => {
+        e.stopPropagation();
+        onSquareClick();
+      }}
+      onPointerDown={(e) => {
+        // Ensure we capture the pointer on mobile
+        e.stopPropagation();
+      }}
+      onPointerOver={(e) => {
+        e.stopPropagation();
+        onSquareHover();
+      }}
+      onPointerOut={(e) => {
+        e.stopPropagation();
+        onSquareUnhover();
+      }}
       receiveShadow
       ref={meshRef}
     >
