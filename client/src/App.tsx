@@ -11,6 +11,7 @@ import GridFloor from "./components/game/GridFloor";
 import GameControls from "./components/ui/GameControls";
 import GameOver from "./components/game/GameOver";
 import SettingsMenu from "./components/ui/SettingsMenu";
+import { useIsMobile } from "./hooks/use-is-mobile";
 
 // Define control keys for the game
 const controls = [
@@ -28,6 +29,19 @@ function App() {
   const settingsOpen = useCheckersStore(state => state.settingsOpen);
   const [showCanvas, setShowCanvas] = useState(false);
   const { setBackgroundMusic, setHitSound, setSuccessSound } = useAudio();
+  const isMobile = useIsMobile();
+
+  // Add meta viewport tag for mobile devices
+  useEffect(() => {
+    const meta = document.createElement('meta');
+    meta.name = 'viewport';
+    meta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover';
+    document.head.appendChild(meta);
+    
+    return () => {
+      document.head.removeChild(meta);
+    };
+  }, []);
 
   // Load audio assets
   useEffect(() => {
@@ -53,6 +67,10 @@ function App() {
     };
   }, [setBackgroundMusic, setHitSound, setSuccessSound]);
 
+  // Adjust camera position for mobile
+  const cameraPosition: [number, number, number] = isMobile ? [0, 12, 9] : [0, 10, 8];
+  const cameraFov = isMobile ? 55 : 45;
+
   return (
     <div className="game-container">
       {showCanvas && (
@@ -64,8 +82,8 @@ function App() {
               <Canvas
                 shadows
                 camera={{
-                  position: [0, 10, 8],
-                  fov: 45,
+                  position: cameraPosition,
+                  fov: cameraFov,
                   near: 0.1,
                   far: 1000
                 }}
