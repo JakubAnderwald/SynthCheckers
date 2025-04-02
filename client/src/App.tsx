@@ -47,17 +47,19 @@ function App() {
 
   // Load audio assets
   useEffect(() => {
-    const bgMusic = new Audio("/sounds/background.mp3");
+    // New synthwave background music
+    const bgMusic = new Audio("/sounds/new/synthwave_bg.mp3");
     bgMusic.loop = true;
-    bgMusic.volume = 0.5;
+    bgMusic.volume = 0.6;
     setBackgroundMusic(bgMusic);
 
-    const hit = new Audio("/sounds/hit.mp3");
-    hit.volume = 0.6;
+    // New synthwave sound effects
+    const hit = new Audio("/sounds/new/synthwave_hit.mp3");
+    hit.volume = 0.7;
     setHitSound(hit);
     
-    const success = new Audio("/sounds/success.mp3");
-    success.volume = 0.7;
+    const success = new Audio("/sounds/new/synthwave_success.mp3");
+    success.volume = 0.8;
     setSuccessSound(success);
     
     setShowCanvas(true);

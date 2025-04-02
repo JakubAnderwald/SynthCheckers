@@ -67,11 +67,26 @@ export const useCheckersStore = create<BoardState & {
         winner: null
       });
       
-      // Play background music when game starts
+      // Play enhanced synthwave background music when game starts
       const audioStore = useAudio.getState();
       if (get().settings.musicEnabled && audioStore.backgroundMusic) {
+        console.log("Starting synthwave background music...");
+        // Make sure we start from the beginning
         audioStore.backgroundMusic.currentTime = 0;
-        audioStore.backgroundMusic.play().catch(err => console.log("Audio play prevented:", err));
+        // Adjust volume for better experience
+        audioStore.backgroundMusic.volume = 0.75;
+        // Play the music
+        audioStore.backgroundMusic.play().catch(err => {
+          console.log("Audio play prevented:", err);
+          // Try again with user interaction in 500ms
+          setTimeout(() => {
+            if (audioStore.backgroundMusic) {
+              audioStore.backgroundMusic.play().catch(e => 
+                console.log("Retry audio play failed:", e)
+              );
+            }
+          }, 500);
+        });
       }
     },
     
@@ -300,12 +315,26 @@ export const useCheckersStore = create<BoardState & {
       const audioStore = useAudio.getState();
       
       if (newSettings.musicEnabled !== undefined) {
-        if (newSettings.musicEnabled && settings.musicEnabled && get().gameState !== 'menu') {
+        if (newSettings.musicEnabled && get().gameState !== 'menu') {
+          console.log("Enabling synthwave music from settings...");
           // Turn music on
           if (audioStore.backgroundMusic) {
-            audioStore.backgroundMusic.play().catch(err => console.log("Audio play prevented:", err));
+            // Make sure volume is set properly
+            audioStore.backgroundMusic.volume = 0.75;
+            audioStore.backgroundMusic.play().catch(err => {
+              console.log("Audio play prevented in settings:", err);
+              // Try again with user interaction in 500ms
+              setTimeout(() => {
+                if (audioStore.backgroundMusic) {
+                  audioStore.backgroundMusic.play().catch(e => 
+                    console.log("Retry audio play failed:", e)
+                  );
+                }
+              }, 500);
+            });
           }
         } else {
+          console.log("Disabling music from settings");
           // Turn music off
           if (audioStore.backgroundMusic) {
             audioStore.backgroundMusic.pause();
