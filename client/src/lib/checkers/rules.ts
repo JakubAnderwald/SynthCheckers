@@ -347,44 +347,55 @@ export const initializeBoard = (): Piece[] => {
   
   console.log("Initializing board...");
   
-  // Create pieces for both players
-  for (let row = 0; row < BOARD_SIZE; row++) {
+  // Create a standard checkers board with 12 pieces per side
+  // Each piece will be on alternating dark squares
+  
+  // Create BLUE PIECES (top of board)
+  for (let row = 0; row < 3; row++) {
     for (let col = 0; col < BOARD_SIZE; col++) {
-      // Only place pieces on valid squares (dark squares)
-      const isValid = isValidSquare({ row, col });
-      
-      if (isValid) {
-        let piece: Piece | null = null;
-        
-        // Blue pieces at the top
-        if (row < 3) {
-          piece = {
-            id: `blue-${row}-${col}`,
-            color: 'blue',
-            type: 'normal',
-            position: { row, col },
-            isSelected: false
-          };
-          console.log(`Creating blue piece at [${row},${col}]`);
-        }
-        // Red pieces at the bottom
-        else if (row > 4) {
-          piece = {
-            id: `red-${row}-${col}`,
-            color: 'red',
-            type: 'normal',
-            position: { row, col },
-            isSelected: false
-          };
-          console.log(`Creating red piece at [${row},${col}]`);
-        }
-        
-        if (piece) {
-          pieces.push(piece);
-        }
+      // Place pieces only on valid dark squares
+      if (isValidSquare({ row, col })) {
+        const piece = {
+          id: `blue-${row}-${col}`,
+          color: 'blue' as const,
+          type: 'normal' as const,
+          position: { row, col },
+          isSelected: false
+        };
+        console.log(`Creating blue piece at [${row},${col}]`);
+        pieces.push(piece);
       }
     }
   }
+  
+  // Create RED PIECES (bottom of board)
+  for (let row = 5; row < BOARD_SIZE; row++) {
+    for (let col = 0; col < BOARD_SIZE; col++) {
+      // Place pieces only on valid dark squares
+      if (isValidSquare({ row, col })) {
+        const piece = {
+          id: `red-${row}-${col}`,
+          color: 'red' as const,
+          type: 'normal' as const,
+          position: { row, col },
+          isSelected: false
+        };
+        console.log(`Creating red piece at [${row},${col}]`);
+        pieces.push(piece);
+      }
+    }
+  }
+  
+  // Add a special test piece in the middle of the board that can move
+  const testPiece = {
+    id: `red-3-1`,
+    color: 'red' as const,
+    type: 'normal' as const,
+    position: { row: 3, col: 1 },
+    isSelected: false
+  };
+  console.log(`Creating test red piece at [3,1]`);
+  pieces.push(testPiece);
   
   console.log(`Total pieces created: ${pieces.length} (${pieces.filter(p => p.color === 'red').length} red, ${pieces.filter(p => p.color === 'blue').length} blue)`);
   return pieces;
