@@ -67,26 +67,41 @@ export const useCheckersStore = create<BoardState & {
         winner: null
       });
       
-      // Play enhanced synthwave background music when game starts
+      // Play background music when game starts
       const audioStore = useAudio.getState();
-      if (get().settings.musicEnabled && audioStore.backgroundMusic) {
-        console.log("Starting synthwave background music...");
+      if (get().settings.musicEnabled && audioStore.backgroundMusic && !audioStore.isMuted) {
+        console.log("Starting game music...");
         // Make sure we start from the beginning
         audioStore.backgroundMusic.currentTime = 0;
         // Adjust volume for better experience
         audioStore.backgroundMusic.volume = 0.75;
-        // Play the music
-        audioStore.backgroundMusic.play().catch(err => {
-          console.log("Audio play prevented:", err);
-          // Try again with user interaction in 500ms
-          setTimeout(() => {
-            if (audioStore.backgroundMusic) {
-              audioStore.backgroundMusic.play().catch(e => 
-                console.log("Retry audio play failed:", e)
-              );
-            }
-          }, 500);
-        });
+        
+        // Try to play the audio
+        const playAudio = () => {
+          if (audioStore.backgroundMusic) {
+            audioStore.backgroundMusic.play().catch(err => {
+              console.log("Audio play prevented in game start:", err);
+              console.log("Will try again on next user interaction");
+            });
+          }
+        };
+        
+        // Play immediately
+        playAudio();
+        
+        // And also set up an event to try again on user interaction
+        // This helps with browsers that require user interaction to play audio
+        const tryPlayOnInteraction = () => {
+          playAudio();
+          // Remove the event listener after first use
+          document.removeEventListener('click', tryPlayOnInteraction);
+          document.removeEventListener('touchstart', tryPlayOnInteraction);
+          document.removeEventListener('keydown', tryPlayOnInteraction);
+        };
+        
+        document.addEventListener('click', tryPlayOnInteraction);
+        document.addEventListener('touchstart', tryPlayOnInteraction);
+        document.addEventListener('keydown', tryPlayOnInteraction);
       }
     },
     
@@ -311,27 +326,44 @@ export const useCheckersStore = create<BoardState & {
       }));
       
       // Handle music toggling
-      const { settings } = get();
       const audioStore = useAudio.getState();
+      const { gameState } = get();
       
       if (newSettings.musicEnabled !== undefined) {
-        if (newSettings.musicEnabled && get().gameState !== 'menu') {
-          console.log("Enabling synthwave music from settings...");
+        if (newSettings.musicEnabled && gameState !== 'menu') {
+          console.log("Enabling game music from settings...");
           // Turn music on
-          if (audioStore.backgroundMusic) {
+          if (audioStore.backgroundMusic && !audioStore.isMuted) {
             // Make sure volume is set properly
             audioStore.backgroundMusic.volume = 0.75;
-            audioStore.backgroundMusic.play().catch(err => {
-              console.log("Audio play prevented in settings:", err);
-              // Try again with user interaction in 500ms
-              setTimeout(() => {
-                if (audioStore.backgroundMusic) {
-                  audioStore.backgroundMusic.play().catch(e => 
-                    console.log("Retry audio play failed:", e)
-                  );
-                }
-              }, 500);
-            });
+            console.log("Attempting to play music...");
+            
+            // Try to play the audio
+            const playAudio = () => {
+              if (audioStore.backgroundMusic) {
+                audioStore.backgroundMusic.play().catch(err => {
+                  console.log("Audio play prevented in settings:", err);
+                  console.log("Will try again on next user interaction");
+                });
+              }
+            };
+            
+            // Play immediately
+            playAudio();
+            
+            // And also set up an event to try again on user interaction
+            // This helps with browsers that require user interaction to play audio
+            const tryPlayOnInteraction = () => {
+              playAudio();
+              // Remove the event listener after first use
+              document.removeEventListener('click', tryPlayOnInteraction);
+              document.removeEventListener('touchstart', tryPlayOnInteraction);
+              document.removeEventListener('keydown', tryPlayOnInteraction);
+            };
+            
+            document.addEventListener('click', tryPlayOnInteraction);
+            document.addEventListener('touchstart', tryPlayOnInteraction);
+            document.addEventListener('keydown', tryPlayOnInteraction);
           }
         } else {
           console.log("Disabling music from settings");

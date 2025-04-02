@@ -47,27 +47,60 @@ function App() {
 
   // Load audio assets
   useEffect(() => {
-    // New synthwave background music
-    const bgMusic = new Audio("/sounds/new/synthwave_bg.mp3");
+    // Load original audio files as fallback since the new ones seem corrupted
+    const bgMusic = new Audio("/sounds/background.mp3");
     bgMusic.loop = true;
     bgMusic.volume = 0.6;
+    console.log("Loading background music...");
+    
+    // Set up event listeners to track audio loading
+    bgMusic.addEventListener('canplaythrough', () => {
+      console.log("Background music loaded successfully");
+    });
+    
+    bgMusic.addEventListener('error', (e) => {
+      console.error("Background music error:", e);
+    });
+    
     setBackgroundMusic(bgMusic);
 
-    // New synthwave sound effects
-    const hit = new Audio("/sounds/new/synthwave_hit.mp3");
+    // Sound effects
+    const hit = new Audio("/sounds/hit.mp3");
     hit.volume = 0.7;
+    console.log("Loading hit sound effect...");
+    hit.addEventListener('canplaythrough', () => {
+      console.log("Hit sound loaded successfully");
+    });
     setHitSound(hit);
     
-    const success = new Audio("/sounds/new/synthwave_success.mp3");
+    const success = new Audio("/sounds/success.mp3");
     success.volume = 0.8;
+    console.log("Loading success sound effect...");
+    success.addEventListener('canplaythrough', () => {
+      console.log("Success sound loaded successfully");
+    });
     setSuccessSound(success);
     
+    // Load audio manually to ensure they're ready
+    bgMusic.load();
+    hit.load();
+    success.load();
+    
     setShowCanvas(true);
+    
+    // Try playing a quick silent sound to enable audio
+    const enableAudio = () => {
+      const silentSound = new Audio();
+      silentSound.play().catch(e => console.log("Silent sound error:", e));
+      document.removeEventListener('click', enableAudio);
+    };
+    document.addEventListener('click', enableAudio);
     
     return () => {
       bgMusic.pause();
       hit.pause();
       success.pause();
+      document.removeEventListener('click', enableAudio);
     };
   }, [setBackgroundMusic, setHitSound, setSuccessSound]);
 

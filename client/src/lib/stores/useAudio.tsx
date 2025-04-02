@@ -28,14 +28,27 @@ export const useAudio = create<AudioState>((set, get) => ({
   setSuccessSound: (sound) => set({ successSound: sound }),
   
   toggleMute: () => {
-    const { isMuted } = get();
+    const { isMuted, backgroundMusic } = get();
     const newMutedState = !isMuted;
     
-    // Just update the muted state
+    // Update the muted state
     set({ isMuted: newMutedState });
     
     // Log the change
     console.log(`Sound ${newMutedState ? 'muted' : 'unmuted'}`);
+    
+    // Handle background music
+    if (backgroundMusic) {
+      if (newMutedState) {
+        // Pause the music if we're muting
+        backgroundMusic.pause();
+        console.log("Background music paused due to mute");
+      } else {
+        // Resume the music if we're unmuting
+        // Note: We'll let the game store handle when to actually play
+        console.log("Sound unmuted, music can be resumed");
+      }
+    }
   },
   
   playHit: () => {
