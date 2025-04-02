@@ -11,8 +11,8 @@ export const isValidPosition = (position: Position): boolean => {
 
 // Check if a position is a valid square for a piece (black/dark squares only)
 export const isValidSquare = (position: Position): boolean => {
-  // Black/dark squares in our board have the same parity (odd+odd or even+even)
-  return (position.row + position.col) % 2 === 0;
+  // Black/dark squares in our board have odd parity (odd+even or even+odd)
+  return (position.row + position.col) % 2 === 1;
 };
 
 // Get piece at a specific position
@@ -33,6 +33,9 @@ export const getValidMoves = (piece: Piece, pieces: Piece[], includeCapturesOnly
   const validMoves: Position[] = [];
   const { color, type, position } = piece;
   
+  console.log(`Finding valid moves for ${piece.id} at [${position.row},${position.col}], type: ${type}, color: ${color}`);
+  console.log(`Include captures only: ${includeCapturesOnly}`);
+  
   // Direction of movement (red moves down, blue moves up)
   const direction = color === 'red' ? 1 : -1;
   
@@ -52,13 +55,31 @@ export const getValidMoves = (piece: Piece, pieces: Piece[], includeCapturesOnly
         col: position.col + 1 
       };
       
+      console.log(`Checking forward left: [${forwardLeft.row},${forwardLeft.col}]`);
+      
       // Check if forward left is valid
-      if (isValidPosition(forwardLeft) && isValidSquare(forwardLeft) && isSquareEmpty(pieces, forwardLeft)) {
+      const flValid = isValidPosition(forwardLeft);
+      const flValidSquare = isValidSquare(forwardLeft);
+      const flEmpty = isSquareEmpty(pieces, forwardLeft);
+      
+      console.log(`- Valid position: ${flValid}, Valid square: ${flValidSquare}, Empty: ${flEmpty}`);
+      
+      if (flValid && flValidSquare && flEmpty) {
+        console.log(`- Adding forward left as valid move`);
         validMoves.push(forwardLeft);
       }
       
+      console.log(`Checking forward right: [${forwardRight.row},${forwardRight.col}]`);
+      
       // Check if forward right is valid
-      if (isValidPosition(forwardRight) && isValidSquare(forwardRight) && isSquareEmpty(pieces, forwardRight)) {
+      const frValid = isValidPosition(forwardRight);
+      const frValidSquare = isValidSquare(forwardRight);
+      const frEmpty = isSquareEmpty(pieces, forwardRight);
+      
+      console.log(`- Valid position: ${frValid}, Valid square: ${frValidSquare}, Empty: ${frEmpty}`);
+      
+      if (frValid && frValidSquare && frEmpty) {
+        console.log(`- Adding forward right as valid move`);
         validMoves.push(forwardRight);
       }
     }
@@ -77,22 +98,48 @@ export const getValidMoves = (piece: Piece, pieces: Piece[], includeCapturesOnly
         col: position.col + 1 
       };
       
+      console.log(`Checking backward left: [${backwardLeft.row},${backwardLeft.col}]`);
+      
       // Check if backward left is valid
-      if (isValidPosition(backwardLeft) && isValidSquare(backwardLeft) && isSquareEmpty(pieces, backwardLeft)) {
+      const blValid = isValidPosition(backwardLeft);
+      const blValidSquare = isValidSquare(backwardLeft);
+      const blEmpty = isSquareEmpty(pieces, backwardLeft);
+      
+      console.log(`- Valid position: ${blValid}, Valid square: ${blValidSquare}, Empty: ${blEmpty}`);
+      
+      if (blValid && blValidSquare && blEmpty) {
+        console.log(`- Adding backward left as valid move`);
         validMoves.push(backwardLeft);
       }
       
+      console.log(`Checking backward right: [${backwardRight.row},${backwardRight.col}]`);
+      
       // Check if backward right is valid
-      if (isValidPosition(backwardRight) && isValidSquare(backwardRight) && isSquareEmpty(pieces, backwardRight)) {
+      const brValid = isValidPosition(backwardRight);
+      const brValidSquare = isValidSquare(backwardRight);
+      const brEmpty = isSquareEmpty(pieces, backwardRight);
+      
+      console.log(`- Valid position: ${brValid}, Valid square: ${brValidSquare}, Empty: ${brEmpty}`);
+      
+      if (brValid && brValidSquare && brEmpty) {
+        console.log(`- Adding backward right as valid move`);
         validMoves.push(backwardRight);
       }
     }
   }
   
   // For capturing moves
+  console.log(`Checking for capture positions...`);
   const capturedPositions = getCapturePositions(piece, pieces);
-  validMoves.push(...capturedPositions);
   
+  if (capturedPositions.length > 0) {
+    console.log(`- Found ${capturedPositions.length} capture positions`);
+    validMoves.push(...capturedPositions);
+  } else {
+    console.log(`- No capture positions found`);
+  }
+  
+  console.log(`Total valid moves found: ${validMoves.length}`);
   return validMoves;
 };
 
@@ -101,6 +148,8 @@ export const getCapturePositions = (piece: Piece, pieces: Piece[]): Position[] =
   const capturePositions: Position[] = [];
   const { color, type, position } = piece;
   const opponentColor = color === 'red' ? 'blue' : 'red';
+  
+  console.log(`Finding capture positions for ${piece.id}, color: ${color}, type: ${type}`);
   
   // Define the directions to check based on piece type
   let directions = [];
@@ -111,6 +160,7 @@ export const getCapturePositions = (piece: Piece, pieces: Piece[]): Position[] =
       { rowDelta: direction, colDelta: -1 }, // Forward left
       { rowDelta: direction, colDelta: 1 }   // Forward right
     ];
+    console.log(`Normal piece direction: ${direction}, checking 2 directions`);
   } else {
     // Kings can capture in all four directions
     directions = [
@@ -119,6 +169,7 @@ export const getCapturePositions = (piece: Piece, pieces: Piece[]): Position[] =
       { rowDelta: -1, colDelta: -1 }, // Up left
       { rowDelta: -1, colDelta: 1 }   // Up right
     ];
+    console.log(`King piece, checking all 4 directions`);
   }
   
   // Check each direction
@@ -128,24 +179,49 @@ export const getCapturePositions = (piece: Piece, pieces: Piece[]): Position[] =
       col: position.col + direction.colDelta
     };
     
+    console.log(`Checking adjacent position: [${adjacentPos.row},${adjacentPos.col}]`);
+    
     // Check if there's an opponent piece to capture
-    if (isValidPosition(adjacentPos) && isValidSquare(adjacentPos)) {
+    const adjValid = isValidPosition(adjacentPos);
+    const adjValidSquare = isValidSquare(adjacentPos);
+    
+    console.log(`- Valid position: ${adjValid}, Valid square: ${adjValidSquare}`);
+    
+    if (adjValid && adjValidSquare) {
       const adjacentPiece = getPieceAtPosition(pieces, adjacentPos);
       
+      if (adjacentPiece) {
+        console.log(`- Found piece: ${adjacentPiece.id}, color: ${adjacentPiece.color}`);
+      } else {
+        console.log(`- No piece found at this position`);
+      }
+      
       if (adjacentPiece && adjacentPiece.color === opponentColor) {
+        console.log(`- Found opponent piece to capture`);
+        
         // Check if we can land after the jump
         const landingPos: Position = {
           row: adjacentPos.row + direction.rowDelta,
           col: adjacentPos.col + direction.colDelta
         };
         
-        if (isValidPosition(landingPos) && isValidSquare(landingPos) && isSquareEmpty(pieces, landingPos)) {
+        console.log(`- Checking landing position: [${landingPos.row},${landingPos.col}]`);
+        
+        const landValid = isValidPosition(landingPos);
+        const landValidSquare = isValidSquare(landingPos);
+        const landEmpty = isSquareEmpty(pieces, landingPos);
+        
+        console.log(`- Landing valid: ${landValid}, Valid square: ${landValidSquare}, Empty: ${landEmpty}`);
+        
+        if (landValid && landValidSquare && landEmpty) {
+          console.log(`- Adding capture move to [${landingPos.row},${landingPos.col}]`);
           capturePositions.push(landingPos);
         }
       }
     }
   }
   
+  console.log(`Total capture positions found: ${capturePositions.length}`);
   return capturePositions;
 };
 
@@ -269,11 +345,15 @@ export const checkForWinner = (pieces: Piece[]): PieceColor | null => {
 export const initializeBoard = (): Piece[] => {
   const pieces: Piece[] = [];
   
+  console.log("Initializing board...");
+  
   // Create pieces for both players
   for (let row = 0; row < BOARD_SIZE; row++) {
     for (let col = 0; col < BOARD_SIZE; col++) {
       // Only place pieces on valid squares (dark squares)
-      if (isValidSquare({ row, col })) {
+      const isValid = isValidSquare({ row, col });
+      
+      if (isValid) {
         let piece: Piece | null = null;
         
         // Blue pieces at the top
@@ -285,6 +365,7 @@ export const initializeBoard = (): Piece[] => {
             position: { row, col },
             isSelected: false
           };
+          console.log(`Creating blue piece at [${row},${col}]`);
         }
         // Red pieces at the bottom
         else if (row > 4) {
@@ -295,6 +376,7 @@ export const initializeBoard = (): Piece[] => {
             position: { row, col },
             isSelected: false
           };
+          console.log(`Creating red piece at [${row},${col}]`);
         }
         
         if (piece) {
@@ -304,6 +386,7 @@ export const initializeBoard = (): Piece[] => {
     }
   }
   
+  console.log(`Total pieces created: ${pieces.length} (${pieces.filter(p => p.color === 'red').length} red, ${pieces.filter(p => p.color === 'blue').length} blue)`);
   return pieces;
 };
 
