@@ -106,17 +106,43 @@ export const useCheckersStore = create<BoardState & {
     },
     
     movePiece: (position) => {
+      console.log('movePiece called with position:', position);
+      
       const { 
         pieces, 
         selectedPiece, 
         currentPlayer, 
         gameMode, 
-        settings 
+        settings,
+        validMoves 
       } = get();
       
-      if (!selectedPiece) return;
+      console.log('Current state:', {
+        currentPlayer,
+        selectedPiece: selectedPiece ? {
+          id: selectedPiece.id,
+          position: selectedPiece.position,
+          color: selectedPiece.color
+        } : null,
+        validMoves: validMoves.map(move => `${move.row},${move.col}`)
+      });
       
+      // Check if there's a selected piece
+      if (!selectedPiece) {
+        console.error('No piece selected!');
+        return;
+      }
+      
+      // Verify this is a valid move
+      const isValidMove = validMoves.some(move => move.row === position.row && move.col === position.col);
+      if (!isValidMove) {
+        console.error('Invalid move!', position, 'not in valid moves:', validMoves);
+        return;
+      }
+      
+      console.log('Making move from', selectedPiece.position, 'to', position);
       const { newPieces, capturedPiece, becameKing } = makeMove(pieces, selectedPiece, position);
+      console.log('Move completed:', { capturedPiece, becameKing });
       
       // Play sound effects
       const audioStore = useAudio.getState();

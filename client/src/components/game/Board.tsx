@@ -175,7 +175,13 @@ const Board: React.FC = () => {
             key={`${row}-${col}`}
             position={[col, 0, row]}
             color={(row + col) % 2 === 0 ? colors.board.light : colors.board.dark}
-            isValidMove={validMoves.some(move => move.row === row && move.col === col)}
+            isValidMove={validMoves.some(move => {
+              const isValid = move.row === row && move.col === col;
+              if (isValid) {
+                console.log('Valid move found at', row, col);
+              }
+              return isValid;
+            })}
             isKeyboardFocused={keyboardFocus.row === row && keyboardFocus.col === col}
             isHovered={hoveredSquare?.row === row && hoveredSquare?.col === col}
             onSquareClick={() => {

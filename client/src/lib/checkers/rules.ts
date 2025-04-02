@@ -11,7 +11,8 @@ export const isValidPosition = (position: Position): boolean => {
 
 // Check if a position is a valid square for a piece (black/dark squares only)
 export const isValidSquare = (position: Position): boolean => {
-  return (position.row + position.col) % 2 === 1;
+  // Black/dark squares in our board have the same parity (odd+odd or even+even)
+  return (position.row + position.col) % 2 === 0;
 };
 
 // Get piece at a specific position
