@@ -12,6 +12,7 @@ import GridFloor from "./components/game/GridFloor";
 import GameControls from "./components/ui/GameControls";
 import GameOver from "./components/game/GameOver";
 import SettingsMenu from "./components/ui/SettingsMenu";
+import DebugControls from "./components/ui/DebugControls";
 import { useIsMobile } from "./hooks/use-is-mobile";
 
 // Define control keys for the game
@@ -130,6 +131,7 @@ function App() {
               </Canvas>
               
               <GameControls />
+              <DebugControls />
               {gameState === 'game_over' && <GameOver />}
             </>
           )}
