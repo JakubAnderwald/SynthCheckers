@@ -236,17 +236,25 @@ export const getCapturePositions = (piece: Piece, pieces: Piece[]): Position[] =
             const landingCol = checkCol + direction.colDelta;
             const landingPos = { row: landingRow, col: landingCol };
             
-            // If the landing position is valid and empty, we can capture
-            if (isValidPosition(landingPos) && isValidSquare(landingPos) && isSquareEmpty(pieces, landingPos)) {
-              console.log(`- King can capture at [${checkRow},${checkCol}] and land at [${landingRow},${landingCol}]`);
-              capturePositions.push(landingPos);
+            // For kings after capturing a piece, they can land anywhere along the diagonal
+            // Add all valid landing positions beyond the captured piece
+            for (let landingDistance = 1; landingDistance < BOARD_SIZE; landingDistance++) {
+              const landingRow = checkRow + (direction.rowDelta * landingDistance);
+              const landingCol = checkCol + (direction.colDelta * landingDistance);
+              const landingPos = { row: landingRow, col: landingCol };
               
-              // Once we find a capture in this direction, we stop checking (can't jump multiple pieces)
-              break;
-            } else {
-              // If we can't land after the opponent's piece, we can't capture, so stop checking this direction
-              break;
+              // If the landing position is valid and empty, it's a valid capture-move landing spot
+              if (isValidPosition(landingPos) && isValidSquare(landingPos) && isSquareEmpty(pieces, landingPos)) {
+                console.log(`- King can capture at [${checkRow},${checkCol}] and land at [${landingRow},${landingCol}]`);
+                capturePositions.push(landingPos);
+              } else {
+                // If we hit a piece or an invalid square, stop checking further landing spots
+                break;
+              }
             }
+            
+            // Once we find a capture opportunity in this direction, stop looking for more pieces to jump
+            break;
           }
         }
         // If this position is empty, continue checking the next position in this direction

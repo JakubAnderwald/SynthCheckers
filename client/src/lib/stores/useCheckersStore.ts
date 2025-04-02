@@ -156,7 +156,17 @@ export const useCheckersStore = create<BoardState & {
       
       // Check if the piece can capture again
       const updatedPiece = newPieces.find(p => p.id === selectedPiece.id);
-      const canJumpAgain = updatedPiece && capturedPiece && canCaptureAgain(updatedPiece, newPieces);
+      
+      // Can only continue if:
+      // 1. A piece was captured
+      // 2. The piece was NOT just promoted to a king (no extra move after promotion)
+      // 3. There are additional capture moves available
+      const canJumpAgain = updatedPiece && 
+                          capturedPiece && 
+                          !becameKing && 
+                          canCaptureAgain(updatedPiece, newPieces);
+      
+      console.log(`Can jump again: ${canJumpAgain}, becameKing: ${becameKing}`);
       
       if (canJumpAgain) {
         // Same player continues if multiple captures are possible
