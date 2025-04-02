@@ -131,10 +131,12 @@ function App() {
               </Canvas>
               
               <GameControls />
-              <DebugControls />
               {gameState === 'game_over' && <GameOver />}
             </>
           )}
+          
+          {/* Always show debug controls, regardless of game state */}
+          <DebugControls />
           
           {settingsOpen && <SettingsMenu />}
         </KeyboardControls>

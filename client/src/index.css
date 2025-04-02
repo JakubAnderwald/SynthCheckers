@@ -53,3 +53,21 @@ canvas {
     inset: 0;
   }
 }
+
+/* Synth wave glowing effects */
+.glow-text {
+  text-shadow: 0 0 5px #ff00ff, 0 0 10px #ff00ff, 0 0 15px #ff00ff;
+  color: white !important;
+  font-weight: bold;
+}
+
+.glow-border {
+  box-shadow: 0 0 5px #ff00ff, 0 0 10px #ff00ff;
+  border: 1px solid #ff00ff;
+  transition: all 0.2s ease-in-out;
+}
+
+.glow-border:hover {
+  box-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff;
+  transform: scale(1.05);
+}

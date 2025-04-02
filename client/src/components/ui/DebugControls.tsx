@@ -11,21 +11,56 @@ const DebugControls: React.FC = () => {
   const movePiece = useCheckersStore(state => state.movePiece);
   const gameState = useCheckersStore(state => state.gameState);
   const currentPlayer = useCheckersStore(state => state.currentPlayer);
+  const initGame = useCheckersStore(state => state.initGame);
   
   const [debugMode, setDebugMode] = useState(false);
   
   // Filter for only current player's pieces
   const currentPlayerPieces = pieces.filter(piece => piece.color === currentPlayer);
   
-  if (gameState === 'menu' || !debugMode) {
+  // Always show the debug button
+  if (!debugMode) {
     return (
-      <div className="fixed top-24 right-4 z-50">
+      <div className="fixed top-4 right-4 z-50">
         <Button 
           onClick={() => setDebugMode(true)}
           variant="destructive"
           size="sm"
+          className="glow-text glow-border"
         >
           Debug Mode
+        </Button>
+      </div>
+    );
+  }
+  
+  // If in menu and debug mode is enabled, add a start game button
+  if (gameState === 'menu') {
+    return (
+      <div className="fixed top-4 right-4 z-50 p-4 bg-black/80 rounded-lg backdrop-blur-sm text-white">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-bold text-white">Debug Controls</h3>
+          <Button 
+            onClick={() => setDebugMode(false)}
+            variant="ghost"
+            size="sm"
+          >
+            Close
+          </Button>
+        </div>
+        <Button 
+          onClick={() => initGame('two_player')}
+          variant="default"
+          className="mb-2 w-full"
+        >
+          Start Two Player Game
+        </Button>
+        <Button 
+          onClick={() => initGame('single')}
+          variant="secondary"
+          className="w-full"
+        >
+          Start vs AI
         </Button>
       </div>
     );
