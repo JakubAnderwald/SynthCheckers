@@ -41,8 +41,8 @@ export const getValidMoves = (piece: Piece, pieces: Piece[], includeCapturesOnly
   
   // For regular moves (non-capturing)
   if (!includeCapturesOnly) {
-    // Regular pieces can only move forward
-    if (type === 'normal' || type === 'king') {
+    if (type === 'normal') {
+      // Normal pieces can only move forward one step diagonally
       // Forward left
       const forwardLeft: Position = { 
         row: position.row + direction, 
@@ -82,48 +82,38 @@ export const getValidMoves = (piece: Piece, pieces: Piece[], includeCapturesOnly
         console.log(`- Adding forward right as valid move`);
         validMoves.push(forwardRight);
       }
-    }
-    
-    // Kings can also move backward
-    if (type === 'king') {
-      // Backward left
-      const backwardLeft: Position = { 
-        row: position.row - direction, 
-        col: position.col - 1 
-      };
+    } else if (type === 'king') {
+      // Kings can move in all four diagonal directions (multiple spaces)
+      const directions = [
+        { rowDelta: -1, colDelta: -1 }, // Up-left
+        { rowDelta: -1, colDelta: 1 },  // Up-right
+        { rowDelta: 1, colDelta: -1 },  // Down-left
+        { rowDelta: 1, colDelta: 1 }    // Down-right
+      ];
       
-      // Backward right
-      const backwardRight: Position = { 
-        row: position.row - direction, 
-        col: position.col + 1 
-      };
-      
-      console.log(`Checking backward left: [${backwardLeft.row},${backwardLeft.col}]`);
-      
-      // Check if backward left is valid
-      const blValid = isValidPosition(backwardLeft);
-      const blValidSquare = isValidSquare(backwardLeft);
-      const blEmpty = isSquareEmpty(pieces, backwardLeft);
-      
-      console.log(`- Valid position: ${blValid}, Valid square: ${blValidSquare}, Empty: ${blEmpty}`);
-      
-      if (blValid && blValidSquare && blEmpty) {
-        console.log(`- Adding backward left as valid move`);
-        validMoves.push(backwardLeft);
-      }
-      
-      console.log(`Checking backward right: [${backwardRight.row},${backwardRight.col}]`);
-      
-      // Check if backward right is valid
-      const brValid = isValidPosition(backwardRight);
-      const brValidSquare = isValidSquare(backwardRight);
-      const brEmpty = isSquareEmpty(pieces, backwardRight);
-      
-      console.log(`- Valid position: ${brValid}, Valid square: ${brValidSquare}, Empty: ${brEmpty}`);
-      
-      if (brValid && brValidSquare && brEmpty) {
-        console.log(`- Adding backward right as valid move`);
-        validMoves.push(backwardRight);
+      // Check each direction
+      for (const dir of directions) {
+        // Check multiple spaces in each direction (limited by board size)
+        for (let distance = 1; distance <= BOARD_SIZE - 1; distance++) {
+          const newRow = position.row + (dir.rowDelta * distance);
+          const newCol = position.col + (dir.colDelta * distance);
+          const newPos: Position = { row: newRow, col: newCol };
+          
+          // Check if this position is valid and empty
+          if (isValidPosition(newPos) && isValidSquare(newPos)) {
+            if (isSquareEmpty(pieces, newPos)) {
+              // Valid move - add it
+              console.log(`Valid king move found at ${newRow},${newCol} (distance ${distance})`);
+              validMoves.push(newPos);
+            } else {
+              // Hit a piece, can't go further in this direction
+              break;
+            }
+          } else {
+            // Hit edge of board or invalid square
+            break;
+          }
+        }
       }
     }
   }
@@ -151,73 +141,115 @@ export const getCapturePositions = (piece: Piece, pieces: Piece[]): Position[] =
   
   console.log(`Finding capture positions for ${piece.id}, color: ${color}, type: ${type}`);
   
-  // Define the directions to check based on piece type
-  let directions = [];
-  if (type === 'normal') {
-    // Regular pieces can capture in all directions (both forward and backward)
-    directions = [
-      { rowDelta: 1, colDelta: -1 },  // Down left
-      { rowDelta: 1, colDelta: 1 },   // Down right
-      { rowDelta: -1, colDelta: -1 }, // Up left
-      { rowDelta: -1, colDelta: 1 }   // Up right
-    ];
-    console.log(`Normal piece, checking all 4 directions for captures`);
-  } else {
-    // Kings can capture in all four directions (same as normal pieces for captures)
-    directions = [
-      { rowDelta: 1, colDelta: -1 },  // Down left
-      { rowDelta: 1, colDelta: 1 },   // Down right
-      { rowDelta: -1, colDelta: -1 }, // Up left
-      { rowDelta: -1, colDelta: 1 }   // Up right
-    ];
-    console.log(`King piece, checking all 4 directions`);
-  }
+  // Define the directions to check
+  const directions = [
+    { rowDelta: 1, colDelta: -1 },  // Down left
+    { rowDelta: 1, colDelta: 1 },   // Down right
+    { rowDelta: -1, colDelta: -1 }, // Up left
+    { rowDelta: -1, colDelta: 1 }   // Up right
+  ];
   
-  // Check each direction
-  for (const direction of directions) {
-    const adjacentPos: Position = {
-      row: position.row + direction.rowDelta,
-      col: position.col + direction.colDelta
-    };
+  if (type === 'normal') {
+    console.log(`Normal piece, checking all 4 directions for captures`);
     
-    console.log(`Checking adjacent position: [${adjacentPos.row},${adjacentPos.col}]`);
-    
-    // Check if there's an opponent piece to capture
-    const adjValid = isValidPosition(adjacentPos);
-    const adjValidSquare = isValidSquare(adjacentPos);
-    
-    console.log(`- Valid position: ${adjValid}, Valid square: ${adjValidSquare}`);
-    
-    if (adjValid && adjValidSquare) {
-      const adjacentPiece = getPieceAtPosition(pieces, adjacentPos);
+    // For normal pieces, we can only capture 1 space away
+    // Check each direction
+    for (const direction of directions) {
+      const adjacentPos: Position = {
+        row: position.row + direction.rowDelta,
+        col: position.col + direction.colDelta
+      };
       
-      if (adjacentPiece) {
-        console.log(`- Found piece: ${adjacentPiece.id}, color: ${adjacentPiece.color}`);
-      } else {
-        console.log(`- No piece found at this position`);
-      }
+      console.log(`Checking adjacent position: [${adjacentPos.row},${adjacentPos.col}]`);
       
-      if (adjacentPiece && adjacentPiece.color === opponentColor) {
-        console.log(`- Found opponent piece to capture`);
+      // Check if there's an opponent piece to capture
+      const adjValid = isValidPosition(adjacentPos);
+      const adjValidSquare = isValidSquare(adjacentPos);
+      
+      console.log(`- Valid position: ${adjValid}, Valid square: ${adjValidSquare}`);
+      
+      if (adjValid && adjValidSquare) {
+        const adjacentPiece = getPieceAtPosition(pieces, adjacentPos);
         
-        // Check if we can land after the jump
-        const landingPos: Position = {
-          row: adjacentPos.row + direction.rowDelta,
-          col: adjacentPos.col + direction.colDelta
-        };
-        
-        console.log(`- Checking landing position: [${landingPos.row},${landingPos.col}]`);
-        
-        const landValid = isValidPosition(landingPos);
-        const landValidSquare = isValidSquare(landingPos);
-        const landEmpty = isSquareEmpty(pieces, landingPos);
-        
-        console.log(`- Landing valid: ${landValid}, Valid square: ${landValidSquare}, Empty: ${landEmpty}`);
-        
-        if (landValid && landValidSquare && landEmpty) {
-          console.log(`- Adding capture move to [${landingPos.row},${landingPos.col}]`);
-          capturePositions.push(landingPos);
+        if (adjacentPiece) {
+          console.log(`- Found piece: ${adjacentPiece.id}, color: ${adjacentPiece.color}`);
+        } else {
+          console.log(`- No piece found at this position`);
         }
+        
+        if (adjacentPiece && adjacentPiece.color === opponentColor) {
+          console.log(`- Found opponent piece to capture`);
+          
+          // Check if we can land after the jump
+          const landingPos: Position = {
+            row: adjacentPos.row + direction.rowDelta,
+            col: adjacentPos.col + direction.colDelta
+          };
+          
+          console.log(`- Checking landing position: [${landingPos.row},${landingPos.col}]`);
+          
+          const landValid = isValidPosition(landingPos);
+          const landValidSquare = isValidSquare(landingPos);
+          const landEmpty = isSquareEmpty(pieces, landingPos);
+          
+          console.log(`- Landing valid: ${landValid}, Valid square: ${landValidSquare}, Empty: ${landEmpty}`);
+          
+          if (landValid && landValidSquare && landEmpty) {
+            console.log(`- Adding capture move to [${landingPos.row},${landingPos.col}]`);
+            capturePositions.push(landingPos);
+          }
+        }
+      }
+    }
+  } else {
+    // Kings can capture in all four directions and multiple spaces away
+    console.log(`King piece, checking all 4 directions for long-range captures`);
+    
+    // Check each direction
+    for (const direction of directions) {
+      // For kings, we need to check all positions in each direction
+      // to find the first opponent piece and then verify we can jump it
+      
+      for (let distance = 1; distance < BOARD_SIZE; distance++) {
+        const checkRow = position.row + (distance * direction.rowDelta);
+        const checkCol = position.col + (distance * direction.colDelta);
+        const checkPos = { row: checkRow, col: checkCol };
+        
+        // If we're out of bounds or not on a valid square, stop checking this direction
+        if (!isValidPosition(checkPos) || !isValidSquare(checkPos)) {
+          break;
+        }
+        
+        // Check if there's a piece at this position
+        const pieceAtPosition = getPieceAtPosition(pieces, checkPos);
+        
+        if (pieceAtPosition) {
+          // If it's our own piece, we can't jump it, so stop checking this direction
+          if (pieceAtPosition.color === color) {
+            break;
+          }
+          
+          // If it's an opponent's piece, check if we can land after jumping it
+          if (pieceAtPosition.color === opponentColor) {
+            // Check the next position to see if it's empty
+            const landingRow = checkRow + direction.rowDelta;
+            const landingCol = checkCol + direction.colDelta;
+            const landingPos = { row: landingRow, col: landingCol };
+            
+            // If the landing position is valid and empty, we can capture
+            if (isValidPosition(landingPos) && isValidSquare(landingPos) && isSquareEmpty(pieces, landingPos)) {
+              console.log(`- King can capture at [${checkRow},${checkCol}] and land at [${landingRow},${landingCol}]`);
+              capturePositions.push(landingPos);
+              
+              // Once we find a capture in this direction, we stop checking (can't jump multiple pieces)
+              break;
+            } else {
+              // If we can't land after the opponent's piece, we can't capture, so stop checking this direction
+              break;
+            }
+          }
+        }
+        // If this position is empty, continue checking the next position in this direction
       }
     }
   }
@@ -283,19 +315,73 @@ export const makeMove = (
   const rowDiff = Math.abs(targetPosition.row - pieceToMove.position.row);
   const colDiff = Math.abs(targetPosition.col - pieceToMove.position.col);
   
-  if (rowDiff === 2 && colDiff === 2) {
-    // This is a capture move, find the captured piece
-    const capturedRow = (pieceToMove.position.row + targetPosition.row) / 2;
-    const capturedCol = (pieceToMove.position.col + targetPosition.col) / 2;
+  // If row and column differences are equal and more than 1, it's a diagonal move
+  // This can be either a king's move or a capture move
+  if (rowDiff === colDiff && rowDiff >= 2) {
+    // For normal pieces, only 2-square captures are valid
+    // For kings, we need to check if there's exactly one opponent piece in the path
     
-    const capturedPieceIndex = newPieces.findIndex(p => 
-      p.position.row === capturedRow && p.position.col === capturedCol
-    );
+    // Determine the direction of movement
+    const rowDir = targetPosition.row > pieceToMove.position.row ? 1 : -1;
+    const colDir = targetPosition.col > pieceToMove.position.col ? 1 : -1;
     
-    if (capturedPieceIndex !== -1) {
-      capturedPiece = newPieces[capturedPieceIndex];
-      // Remove the captured piece
-      newPieces.splice(capturedPieceIndex, 1);
+    // For kings, search along the path for an opponent piece
+    if (pieceToMove.type === 'king' && rowDiff > 2) {
+      // Start from the piece's position and move toward the target
+      let capturedPieceFound = false;
+      let capturedPosition: Position | null = null;
+      
+      // Check each position between start and end (not including them)
+      for (let step = 1; step < rowDiff; step++) {
+        const checkRow = pieceToMove.position.row + step * rowDir;
+        const checkCol = pieceToMove.position.col + step * colDir;
+        const pieceAtPosition = getPieceAtPosition(newPieces, { row: checkRow, col: checkCol });
+        
+        // If there's a piece here
+        if (pieceAtPosition) {
+          // If already found a piece, this move isn't valid (can't jump multiple pieces)
+          if (capturedPieceFound) {
+            return { newPieces, capturedPiece, becameKing }; // Invalid move
+          }
+          
+          // If it's an opponent's piece, mark it for capture
+          if (pieceAtPosition.color !== pieceToMove.color) {
+            capturedPieceFound = true;
+            capturedPosition = { row: checkRow, col: checkCol };
+          } else {
+            // Can't jump over your own pieces
+            return { newPieces, capturedPiece, becameKing }; // Invalid move
+          }
+        }
+      }
+      
+      // If we found exactly one opponent piece to capture
+      if (capturedPieceFound && capturedPosition) {
+        const capturedPieceIndex = newPieces.findIndex(p => 
+          p.position.row === capturedPosition!.row && 
+          p.position.col === capturedPosition!.col
+        );
+        
+        if (capturedPieceIndex !== -1) {
+          capturedPiece = newPieces[capturedPieceIndex];
+          // Remove the captured piece
+          newPieces.splice(capturedPieceIndex, 1);
+        }
+      }
+    } else if (rowDiff === 2 && colDiff === 2) {
+      // This is a standard capture move for normal pieces
+      const capturedRow = (pieceToMove.position.row + targetPosition.row) / 2;
+      const capturedCol = (pieceToMove.position.col + targetPosition.col) / 2;
+      
+      const capturedPieceIndex = newPieces.findIndex(p => 
+        p.position.row === capturedRow && p.position.col === capturedCol
+      );
+      
+      if (capturedPieceIndex !== -1) {
+        capturedPiece = newPieces[capturedPieceIndex];
+        // Remove the captured piece
+        newPieces.splice(capturedPieceIndex, 1);
+      }
     }
   }
   
