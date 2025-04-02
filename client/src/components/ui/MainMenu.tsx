@@ -22,8 +22,11 @@ const MainMenu: React.FC = () => {
   
   return (
     <div 
-      className="fixed inset-0 flex flex-col items-center justify-center bg-background-dark z-10 overflow-auto"
-      style={gridStyle}
+      className="fixed inset-0 flex flex-col items-center justify-center z-10 overflow-auto"
+      style={{
+        ...gridStyle,
+        backgroundColor: colors.background.dark
+      }}
     >
       <div className="w-full max-w-md px-4 py-6 sm:py-8 flex flex-col items-center">
         {/* Game Title */}

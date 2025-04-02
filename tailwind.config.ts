@@ -11,6 +11,17 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       colors: {
+        // Synthwave Theme Colors
+        'background-dark': '#0f0a2a',
+        'background-medium': '#1a1141',
+        'background-light': '#2c1e63',
+        
+        'neon-pink': '#f72585',
+        'neon-purple': '#b5179e',
+        'neon-blue': '#4cc9f0',
+        'neon-cyan': '#0df5e3',
+        
+        // Original shadcn theme colors
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         card: {
