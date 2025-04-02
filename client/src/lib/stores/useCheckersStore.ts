@@ -73,8 +73,8 @@ export const useCheckersStore = create<BoardState & {
         console.log("Starting game music...");
         // Make sure we start from the beginning
         audioStore.backgroundMusic.currentTime = 0;
-        // Adjust volume for better experience
-        audioStore.backgroundMusic.volume = 0.75;
+        // Volume for custom synthwave music
+        audioStore.backgroundMusic.volume = 0.75; // Match the same volume throughout the app
         
         // Try to play the audio
         const playAudio = () => {
@@ -334,8 +334,8 @@ export const useCheckersStore = create<BoardState & {
           console.log("Enabling game music from settings...");
           // Turn music on
           if (audioStore.backgroundMusic && !audioStore.isMuted) {
-            // Make sure volume is set properly
-            audioStore.backgroundMusic.volume = 0.75;
+            // Make sure volume is consistent with App.tsx
+            audioStore.backgroundMusic.volume = 0.75; // Volume for custom synthwave track
             console.log("Attempting to play music...");
             
             // Try to play the audio

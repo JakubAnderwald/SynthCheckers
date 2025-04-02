@@ -47,10 +47,10 @@ function App() {
 
   // Load audio assets
   useEffect(() => {
-    // Load original audio files as fallback since the new ones seem corrupted
-    const bgMusic = new Audio("/sounds/background.mp3");
+    // Load the custom synthwave music uploaded by the user
+    const bgMusic = new Audio("/sounds/synth_music.mp3");
     bgMusic.loop = true;
-    bgMusic.volume = 0.6;
+    bgMusic.volume = 0.75; // Increased volume for better experience with custom synthwave music
     console.log("Loading background music...");
     
     // Set up event listeners to track audio loading
