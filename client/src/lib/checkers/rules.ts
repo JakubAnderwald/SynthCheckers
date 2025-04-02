@@ -36,8 +36,8 @@ export const getValidMoves = (piece: Piece, pieces: Piece[], includeCapturesOnly
   console.log(`Finding valid moves for ${piece.id} at [${position.row},${position.col}], type: ${type}, color: ${color}`);
   console.log(`Include captures only: ${includeCapturesOnly}`);
   
-  // Direction of movement (red moves down, blue moves up)
-  const direction = color === 'red' ? 1 : -1;
+  // Direction of movement (red moves up, blue moves down)
+  const direction = color === 'red' ? -1 : 1;
   
   // For regular moves (non-capturing)
   if (!includeCapturesOnly) {
@@ -155,7 +155,7 @@ export const getCapturePositions = (piece: Piece, pieces: Piece[]): Position[] =
   let directions = [];
   if (type === 'normal') {
     // Regular pieces can only capture forward
-    const direction = color === 'red' ? 1 : -1;
+    const direction = color === 'red' ? -1 : 1;
     directions = [
       { rowDelta: direction, colDelta: -1 }, // Forward left
       { rowDelta: direction, colDelta: 1 }   // Forward right
@@ -304,8 +304,8 @@ export const makeMove = (
   
   // Check if the piece should be promoted to king
   if (pieceToMove.type !== 'king') {
-    if ((pieceToMove.color === 'red' && targetPosition.row === BOARD_SIZE - 1) ||
-        (pieceToMove.color === 'blue' && targetPosition.row === 0)) {
+    if ((pieceToMove.color === 'red' && targetPosition.row === 0) ||
+        (pieceToMove.color === 'blue' && targetPosition.row === BOARD_SIZE - 1)) {
       pieceToMove.type = 'king';
       becameKing = true;
     }
