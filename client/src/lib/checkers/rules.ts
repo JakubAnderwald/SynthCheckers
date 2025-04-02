@@ -154,15 +154,16 @@ export const getCapturePositions = (piece: Piece, pieces: Piece[]): Position[] =
   // Define the directions to check based on piece type
   let directions = [];
   if (type === 'normal') {
-    // Regular pieces can only capture forward
-    const direction = color === 'red' ? -1 : 1;
+    // Regular pieces can capture in all directions (both forward and backward)
     directions = [
-      { rowDelta: direction, colDelta: -1 }, // Forward left
-      { rowDelta: direction, colDelta: 1 }   // Forward right
+      { rowDelta: 1, colDelta: -1 },  // Down left
+      { rowDelta: 1, colDelta: 1 },   // Down right
+      { rowDelta: -1, colDelta: -1 }, // Up left
+      { rowDelta: -1, colDelta: 1 }   // Up right
     ];
-    console.log(`Normal piece direction: ${direction}, checking 2 directions`);
+    console.log(`Normal piece, checking all 4 directions for captures`);
   } else {
-    // Kings can capture in all four directions
+    // Kings can capture in all four directions (same as normal pieces for captures)
     directions = [
       { rowDelta: 1, colDelta: -1 },  // Down left
       { rowDelta: 1, colDelta: 1 },   // Down right
@@ -304,8 +305,10 @@ export const makeMove = (
   
   // Check if the piece should be promoted to king
   if (pieceToMove.type !== 'king') {
+    console.log(`Checking king promotion: ${pieceToMove.color} at row ${targetPosition.row}`);
     if ((pieceToMove.color === 'red' && targetPosition.row === 0) ||
         (pieceToMove.color === 'blue' && targetPosition.row === BOARD_SIZE - 1)) {
+      console.log(`PROMOTING TO KING: ${pieceToMove.id}`);
       pieceToMove.type = 'king';
       becameKing = true;
     }

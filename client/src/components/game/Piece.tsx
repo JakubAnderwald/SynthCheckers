@@ -109,18 +109,37 @@ const Piece: React.FC<PieceProps> = ({ piece, onClick }) => {
       
       {/* If it's a king, add a crown or second piece on top */}
       {piece.type === 'king' && (
-        <mesh
-          position={[0, 0.25, 0]}
-          castShadow
-        >
-          <cylinderGeometry args={[0.25, 0.25, 0.1, 32]} />
-          <meshStandardMaterial
-            color={new THREE.Color(...threeColor)}
-            metalness={0.8}
-            roughness={0.1}
-            map={woodTexture}
-          />
-        </mesh>
+        <>
+          {/* Second checker on top */}
+          <mesh
+            position={[0, 0.25, 0]}
+            castShadow
+          >
+            <cylinderGeometry args={[0.25, 0.25, 0.1, 32]} />
+            <meshStandardMaterial
+              color={new THREE.Color(...threeColor)}
+              metalness={0.8}
+              roughness={0.1}
+              map={woodTexture}
+            />
+          </mesh>
+          
+          {/* Crown effect - a glowing ring */}
+          <mesh
+            position={[0, 0.35, 0]}
+            rotation={[-Math.PI / 2, 0, 0]}
+          >
+            <ringGeometry args={[0.2, 0.3, 32]} />
+            <meshBasicMaterial
+              color={new THREE.Color(...threeGlowColor)}
+              emissive={new THREE.Color(...threeGlowColor)}
+              emissiveIntensity={1.5}
+              side={THREE.DoubleSide}
+              transparent
+              opacity={0.8}
+            />
+          </mesh>
+        </>
       )}
     </group>
   );
