@@ -132,11 +132,9 @@ const Piece: React.FC<PieceProps> = ({ piece, onClick }) => {
             <ringGeometry args={[0.2, 0.3, 32]} />
             <meshBasicMaterial
               color={new THREE.Color(...threeGlowColor)}
-              emissive={new THREE.Color(...threeGlowColor)}
-              emissiveIntensity={1.5}
-              side={THREE.DoubleSide}
               transparent
               opacity={0.8}
+              side={THREE.DoubleSide}
             />
           </mesh>
         </>
