@@ -1,14 +1,9 @@
-import React, { useRef, useState, useEffect, Suspense } from 'react';
+import React, { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import { useGLTF } from '@react-three/drei';
+import { useTexture } from '@react-three/drei';
 import { Piece as PieceType } from '@/lib/checkers/types';
 import { colors, getThreeColor } from '@/lib/theme/colors';
-import { GLTF } from 'three-stdlib';
-
-// Preload models
-useGLTF.preload('/models/checker_piece.glb');
-useGLTF.preload('/models/checker_king.glb');
 
 interface PieceProps {
   piece: PieceType;
@@ -16,37 +11,26 @@ interface PieceProps {
 }
 
 const Piece: React.FC<PieceProps> = ({ piece, onClick }) => {
-  const groupRef = useRef<THREE.Group>(null);
+  const meshRef = useRef<THREE.Mesh>(null);
   const glowMaterialRef = useRef<THREE.MeshBasicMaterial>(null);
-  const [modelLoaded, setModelLoaded] = useState(false);
+  const woodTexture = useTexture('/textures/wood.jpg');
   
-  // Load appropriate model based on piece type
-  const { scene: pieceModel } = useGLTF(
-    piece.type === 'king' ? '/models/checker_king.glb' : '/models/checker_piece.glb'
-  ) as GLTF & {
-    scene: THREE.Group
-  };
-  
-  // Update model loaded state
-  useEffect(() => {
-    if (pieceModel) {
-      setModelLoaded(true);
-      console.log(`${piece.type} model loaded successfully`);
-    }
-  }, [pieceModel, piece.type]);
+  // Configure texture
+  woodTexture.wrapS = woodTexture.wrapT = THREE.RepeatWrapping;
+  woodTexture.repeat.set(1, 1);
   
   // Animation for the piece
   useFrame(({ clock }) => {
-    if (groupRef.current) {
+    if (meshRef.current) {
       // If selected, make it hover
       if (piece.isSelected) {
-        groupRef.current.position.y = 0.3 + Math.sin(clock.getElapsedTime() * 5) * 0.05;
+        meshRef.current.position.y = 0.3 + Math.sin(clock.getElapsedTime() * 5) * 0.05;
       } else {
-        groupRef.current.position.y = 0.15;
+        meshRef.current.position.y = 0.15;
       }
       
       // Subtle rotation animation
-      groupRef.current.rotation.y = clock.getElapsedTime() * 0.2;
+      meshRef.current.rotation.y = clock.getElapsedTime() * 0.2;
     }
     
     // Glow animation
@@ -72,24 +56,6 @@ const Piece: React.FC<PieceProps> = ({ piece, onClick }) => {
   // Position based on the piece's position
   const position: [number, number, number] = [piece.position.col, 0, piece.position.row];
   
-  // Clone and prepare the model
-  const clonedModel = modelLoaded ? pieceModel.clone() : null;
-  
-  // Apply material to model if loaded
-  if (clonedModel) {
-    clonedModel.traverse((child) => {
-      if (child instanceof THREE.Mesh) {
-        child.material = new THREE.MeshStandardMaterial({
-          color: new THREE.Color(...threeColor),
-          metalness: 0.8,
-          roughness: 0.2,
-        });
-        child.castShadow = true;
-        child.receiveShadow = true;
-      }
-    });
-  }
-  
   return (
     <group position={position}>
       {/* Glow effect beneath the piece */}
@@ -107,11 +73,10 @@ const Piece: React.FC<PieceProps> = ({ piece, onClick }) => {
         />
       </mesh>
       
-      {/* The 3D model piece */}
-      <group
-        ref={groupRef}
+      {/* The actual checker piece */}
+      <mesh
+        ref={meshRef}
         position={[0, 0.15, 0]}
-        scale={[2.5, 2.5, 2.5]} // Scale up the model for better visibility
         onClick={(e) => {
           e.stopPropagation(); 
           console.log('Piece clicked:', piece.id, 'Color:', piece.color, 'Position:', piece.position);
@@ -130,23 +95,50 @@ const Piece: React.FC<PieceProps> = ({ piece, onClick }) => {
             onClick();
           }, 50);
         }}
+        castShadow
+        receiveShadow
       >
-        <Suspense fallback={
-          <mesh>
-            <cylinderGeometry args={[0.15, 0.15, 0.05, 32]} />
-            <meshStandardMaterial color={new THREE.Color(...threeColor)} />
+        <cylinderGeometry args={[0.35, 0.35, 0.1, 32]} />
+        <meshStandardMaterial
+          color={new THREE.Color(...threeColor)}
+          metalness={0.7}
+          roughness={0.2}
+          map={woodTexture}
+        />
+      </mesh>
+      
+      {/* If it's a king, add a crown or second piece on top */}
+      {piece.type === 'king' && (
+        <>
+          {/* Second checker on top */}
+          <mesh
+            position={[0, 0.25, 0]}
+            castShadow
+          >
+            <cylinderGeometry args={[0.25, 0.25, 0.1, 32]} />
+            <meshStandardMaterial
+              color={new THREE.Color(...threeColor)}
+              metalness={0.8}
+              roughness={0.1}
+              map={woodTexture}
+            />
           </mesh>
-        }>
-          {modelLoaded && clonedModel ? (
-            <primitive object={clonedModel} />
-          ) : (
-            <mesh>
-              <cylinderGeometry args={[0.15, 0.15, 0.05, 32]} />
-              <meshStandardMaterial color={new THREE.Color(...threeColor)} />
-            </mesh>
-          )}
-        </Suspense>
-      </group>
+          
+          {/* Crown effect - a glowing ring */}
+          <mesh
+            position={[0, 0.35, 0]}
+            rotation={[-Math.PI / 2, 0, 0]}
+          >
+            <ringGeometry args={[0.2, 0.3, 32]} />
+            <meshBasicMaterial
+              color={new THREE.Color(...threeGlowColor)}
+              transparent
+              opacity={0.8}
+              side={THREE.DoubleSide}
+            />
+          </mesh>
+        </>
+      )}
     </group>
   );
 };
