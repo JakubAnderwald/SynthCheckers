@@ -345,78 +345,45 @@ export const checkForWinner = (pieces: Piece[]): PieceColor | null => {
 export const initializeBoard = (): Piece[] => {
   const pieces: Piece[] = [];
   
-  console.log("Initializing SIMPLIFIED TEST board...");
+  console.log("Initializing FULL CHECKERS board...");
   
-  // SIMPLIFIED BOARD SETUP - for debugging purposes
-  // Just a few pieces with clear movement paths
+  // In standard checkers, each player starts with 12 pieces on dark squares
+  // in the first three rows closest to their side
   
-  // A few blue pieces at the top
-  const bluePieces = [
-    { row: 0, col: 1 },
-    { row: 0, col: 3 },
-    { row: 0, col: 5 },
-    { row: 1, col: 0 },
-    { row: 1, col: 2 }
-  ];
-  
-  for (const pos of bluePieces) {
-    if (isValidSquare(pos)) {
-      const piece = {
-        id: `blue-${pos.row}-${pos.col}`,
-        color: 'blue' as const,
-        type: 'normal' as const,
-        position: { row: pos.row, col: pos.col },
-        isSelected: false
-      };
-      console.log(`Creating blue piece at [${pos.row},${pos.col}]`);
-      pieces.push(piece);
-    } else {
-      console.log(`SKIPPING invalid blue position [${pos.row},${pos.col}]`);
+  // Create BLUE PIECES (top of board)
+  for (let row = 0; row < 3; row++) {
+    for (let col = 0; col < BOARD_SIZE; col++) {
+      // Only place pieces on dark squares
+      if (isValidSquare({ row, col })) {
+        const piece = {
+          id: `blue-${row}-${col}`,
+          color: 'blue' as const,
+          type: 'normal' as const,
+          position: { row, col },
+          isSelected: false
+        };
+        console.log(`Creating blue piece at [${row},${col}]`);
+        pieces.push(piece);
+      }
     }
   }
   
-  // A few red pieces at the bottom with clear movement paths
-  const redPieces = [
-    { row: 5, col: 0 },
-    { row: 5, col: 2 },
-    { row: 5, col: 4 },
-    { row: 6, col: 1 },
-    { row: 6, col: 3 }
-  ];
-  
-  for (const pos of redPieces) {
-    if (isValidSquare(pos)) {
-      const piece = {
-        id: `red-${pos.row}-${pos.col}`,
-        color: 'red' as const,
-        type: 'normal' as const,
-        position: { row: pos.row, col: pos.col },
-        isSelected: false
-      };
-      console.log(`Creating red piece at [${pos.row},${pos.col}]`);
-      pieces.push(piece);
-    } else {
-      console.log(`SKIPPING invalid red position [${pos.row},${pos.col}]`);
+  // Create RED PIECES (bottom of board)
+  for (let row = BOARD_SIZE - 3; row < BOARD_SIZE; row++) {
+    for (let col = 0; col < BOARD_SIZE; col++) {
+      // Only place pieces on dark squares
+      if (isValidSquare({ row, col })) {
+        const piece = {
+          id: `red-${row}-${col}`,
+          color: 'red' as const,
+          type: 'normal' as const,
+          position: { row, col },
+          isSelected: false
+        };
+        console.log(`Creating red piece at [${row},${col}]`);
+        pieces.push(piece);
+      }
     }
-  }
-  
-  // Add a test piece in the middle that can easily move
-  // Make sure it's on a valid dark square with odd parity (row+col is odd)
-  const testPosition = { row: 3, col: 2 };
-  
-  // Verify the test position is valid
-  if (isValidSquare(testPosition)) {
-    const testPiece = {
-      id: `red-${testPosition.row}-${testPosition.col}`,
-      color: 'red' as const,
-      type: 'normal' as const,
-      position: testPosition,
-      isSelected: false
-    };
-    console.log(`Creating test red piece at [${testPosition.row},${testPosition.col}]`);
-    pieces.push(testPiece);
-  } else {
-    console.log(`ERROR: Test position [${testPosition.row},${testPosition.col}] is not a valid square!`);
   }
   
   console.log(`Total pieces created: ${pieces.length} (${pieces.filter(p => p.color === 'red').length} red, ${pieces.filter(p => p.color === 'blue').length} blue)`);
