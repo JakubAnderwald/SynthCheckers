@@ -64,12 +64,15 @@ function App() {
     
     setBackgroundMusic(bgMusic);
 
-    // Sound effects
+    // Sound effects - make sure these load properly
     const hit = new Audio("/sounds/hit.mp3");
-    hit.volume = 0.7;
+    hit.volume = 0.6; // Match the volume in useAudio
     console.log("Loading hit sound effect...");
     hit.addEventListener('canplaythrough', () => {
       console.log("Hit sound loaded successfully");
+    });
+    hit.addEventListener('error', (e) => {
+      console.error("Hit sound load error:", e);
     });
     setHitSound(hit);
     
@@ -78,6 +81,9 @@ function App() {
     console.log("Loading success sound effect...");
     success.addEventListener('canplaythrough', () => {
       console.log("Success sound loaded successfully");
+    });
+    success.addEventListener('error', (e) => {
+      console.error("Success sound load error:", e);
     });
     setSuccessSound(success);
     

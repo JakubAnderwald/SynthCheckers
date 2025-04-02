@@ -60,12 +60,23 @@ export const useAudio = create<AudioState>((set, get) => ({
         return;
       }
       
+      console.log("Playing hit sound effect");
       // Clone the sound to allow overlapping playback
       const soundClone = hitSound.cloneNode() as HTMLAudioElement;
-      soundClone.volume = 0.3;
+      soundClone.volume = 0.6; // Increased volume
+      soundClone.currentTime = 0; // Reset to beginning
       soundClone.play().catch(error => {
         console.log("Hit sound play prevented:", error);
+        
+        // Try a second time with a slight delay (browser restrictions sometimes require user interaction)
+        setTimeout(() => {
+          soundClone.play().catch(err => {
+            console.log("Second attempt to play hit sound failed:", err);
+          });
+        }, 100);
       });
+    } else {
+      console.log("Hit sound not loaded yet");
     }
   },
   
@@ -78,10 +89,23 @@ export const useAudio = create<AudioState>((set, get) => ({
         return;
       }
       
-      successSound.currentTime = 0;
-      successSound.play().catch(error => {
+      console.log("Playing success sound effect");
+      // Clone the sound to allow overlapping playback
+      const soundClone = successSound.cloneNode() as HTMLAudioElement;
+      soundClone.volume = 0.8; // Keep volume high for success sound
+      soundClone.currentTime = 0; // Reset to beginning
+      soundClone.play().catch(error => {
         console.log("Success sound play prevented:", error);
+        
+        // Try a second time with a slight delay (browser restrictions sometimes require user interaction)
+        setTimeout(() => {
+          soundClone.play().catch(err => {
+            console.log("Second attempt to play success sound failed:", err);
+          });
+        }, 100);
       });
+    } else {
+      console.log("Success sound not loaded yet");
     }
   }
 }));

@@ -195,15 +195,30 @@ export const getAIMove = (
   aiColor: PieceColor,
   difficulty: 'easy' | 'medium' | 'hard'
 ): Move | null => {
+  console.log(`Finding AI move for ${aiColor} with difficulty ${difficulty}`);
+  
   // Determine search depth based on difficulty
-  let depth = 1;
-  if (difficulty === 'medium') depth = 3;
-  if (difficulty === 'hard') depth = 5;
+  let depth = 1; // Use minimal depth for reliable, quick moves
+  if (difficulty === 'medium') depth = 2;
+  if (difficulty === 'hard') depth = 3;
   
   // Add randomness for easy difficulty
   if (difficulty === 'easy') {
+    console.log("Easy mode - selecting random move");
     const allMoves = getAllMoves(pieces, aiColor);
+    
     if (allMoves.length > 0) {
+      console.log(`Found ${allMoves.length} possible moves for AI`);
+      // Select from captures first if available
+      const captureMoves = allMoves.filter(move => move.capturedPiece);
+      
+      if (captureMoves.length > 0) {
+        console.log("Selecting random capture move");
+        const randomIndex = Math.floor(Math.random() * captureMoves.length);
+        return captureMoves[randomIndex];
+      }
+      
+      // Otherwise select a random move
       const randomIndex = Math.floor(Math.random() * allMoves.length);
       return allMoves[randomIndex];
     }
@@ -211,11 +226,14 @@ export const getAIMove = (
   }
   
   // For medium and hard, use minimax with appropriate depth
+  console.log(`Using minimax with depth ${depth}`);
   const result = minimax(pieces, depth, -Infinity, Infinity, true, aiColor, difficulty);
   
   if (result.move) {
+    console.log("Minimax selected move:", result.move, "with score:", result.score);
     return result.move;
   }
   
+  console.log("No valid moves found for AI");
   return null;
 };

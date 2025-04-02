@@ -174,14 +174,30 @@ export const useCheckersStore = create<BoardState & {
       const { newPieces, capturedPiece, becameKing } = makeMove(pieces, selectedPiece, position);
       console.log('Move completed:', { capturedPiece, becameKing });
       
-      // Play sound effects
+      // Play sound effects with appropriate debugging
       const audioStore = useAudio.getState();
-      if (settings.soundEnabled) {
+      if (settings.soundEnabled && !audioStore.isMuted) {
         if (capturedPiece) {
+          console.log("Triggering capture sound effect");
           audioStore.playHit();
+          // Try a direct play as well for redundancy 
+          try {
+            const tempSound = new Audio("/sounds/hit.mp3");
+            tempSound.volume = 0.7;
+            tempSound.play().catch(e => console.log("Direct hit sound error:", e));
+          } catch (e) {
+            console.error("Failed to create temp sound:", e);
+          }
         } else if (becameKing) {
+          console.log("Triggering king promotion sound effect");
           audioStore.playSuccess();
+        } else {
+          // Always play a sound on move for better feedback
+          console.log("Triggering regular move sound");
+          audioStore.playHit();
         }
+      } else {
+        console.log("Sound effects disabled or muted");
       }
       
       // Check if the piece can capture again
@@ -222,8 +238,18 @@ export const useCheckersStore = create<BoardState & {
           });
           
           // Play success sound for winning
-          if (settings.soundEnabled) {
+          if (settings.soundEnabled && !audioStore.isMuted) {
+            console.log("Playing game over success sound");
             audioStore.playSuccess();
+            
+            // Try a direct play as well for redundancy
+            try {
+              const tempSound = new Audio("/sounds/success.mp3");
+              tempSound.volume = 0.8;
+              tempSound.play().catch(e => console.log("Direct success sound error:", e));
+            } catch (e) {
+              console.error("Failed to create temp success sound:", e);
+            }
           }
         } else {
           // No winner yet, continue the game
@@ -260,40 +286,64 @@ export const useCheckersStore = create<BoardState & {
     aiTurn: () => {
       const { pieces, settings } = get();
       
+      console.log("AI turn started");
+      
       // Get AI's best move
       const aiMove = getAIMove(pieces, 'blue', settings.difficulty);
       
       if (aiMove) {
+        console.log("AI selected move:", aiMove);
+        
         const pieceToMove = getPieceAtPosition(pieces, aiMove.from);
         
         if (pieceToMove) {
+          console.log("AI will move piece:", pieceToMove.id, "from", pieceToMove.position, "to", aiMove.to);
+          
           // First select the piece
           set({
             selectedPiece: pieceToMove,
             pieces: pieces.map(p => ({
               ...p,
               isSelected: p.id === pieceToMove.id
-            }))
+            })),
+            validMoves: [] // Reset valid moves to prevent multiple highlights
           });
           
           // Then move it after a brief delay to visualize the selection
           setTimeout(() => {
+            console.log("AI executing move now");
+            // Make one single move
             get().movePiece(aiMove.to);
-          }, 400);
+          }, 600); // Increased delay for better visualization
         }
       } else {
+        console.log("AI could not find a valid move");
+        
         // If AI can't move, check for win condition
         const hasValidMoves = getAllValidMovesForPlayer(pieces, 'blue').length > 0;
         
         if (!hasValidMoves) {
+          console.log("AI has no valid moves, player wins!");
+          
           set({
             winner: 'red',
             gameState: 'game_over'
           });
           
-          // Play success sound for winning
+          // Play success sound for winning on AI defeat
           if (settings.soundEnabled) {
-            useAudio.getState().playSuccess();
+            console.log("Playing game over success sound (AI defeated)");
+            const audioStore = useAudio.getState();
+            audioStore.playSuccess();
+            
+            // Try a direct play as well for redundancy
+            try {
+              const tempSound = new Audio("/sounds/success.mp3");
+              tempSound.volume = 0.8;
+              tempSound.play().catch(e => console.log("Direct success sound error:", e));
+            } catch (e) {
+              console.error("Failed to create temp success sound:", e);
+            }
           }
         }
       }
