@@ -69,9 +69,9 @@ function App() {
     };
   }, [setBackgroundMusic, setHitSound, setSuccessSound]);
 
-  // Adjust camera position for mobile with a more top-down view
-  const cameraPosition: [number, number, number] = isMobile ? [0, 20, 0.1] : [0, 10, 8];
-  const cameraFov = isMobile ? 40 : 45;
+  // Adjust camera position to show the entire board from a good angle
+  const cameraPosition: [number, number, number] = isMobile ? [3.5, 12, 3.5] : [3.5, 10, 12];
+  const cameraFov = isMobile ? 50 : 40;
   const targetPosition = new THREE.Vector3(3.5, 0, 3.5);
 
   return (
@@ -98,27 +98,27 @@ function App() {
                 <color attach="background" args={["#0f0a2a"]} />
                 <fog attach="fog" args={["#0f0a2a", 10, 30]} />
                 
-                {/* Camera Controls */}
-                {isMobile ? (
-                  <OrbitControls 
-                    enableZoom={true}
-                    enablePan={false}
-                    enableRotate={false}
-                    minPolarAngle={0}
-                    maxPolarAngle={Math.PI / 2.5}
-                    target={targetPosition}
-                    // Only allow zooming, disable rotation to prevent interference with piece selection
-                    mouseButtons={{
-                      LEFT: undefined,
-                      MIDDLE: THREE.MOUSE.DOLLY,
-                      RIGHT: undefined
-                    }}
-                    touches={{
-                      ONE: undefined,
-                      TWO: THREE.TOUCH.DOLLY_PAN
-                    }}
-                  />
-                ) : null}
+                {/* Camera Controls - Allow for both mobile and desktop */}
+                <OrbitControls 
+                  enableZoom={true}
+                  enablePan={false}
+                  enableRotate={true}
+                  minPolarAngle={Math.PI / 6}
+                  maxPolarAngle={Math.PI / 2.5}
+                  target={targetPosition}
+                  minDistance={5}
+                  maxDistance={20}
+                  // Configure touch controls differently for mobile
+                  mouseButtons={{
+                    LEFT: isMobile ? undefined : THREE.MOUSE.ROTATE,
+                    MIDDLE: THREE.MOUSE.DOLLY,
+                    RIGHT: undefined
+                  }}
+                  touches={{
+                    ONE: isMobile ? undefined : THREE.TOUCH.ROTATE,
+                    TWO: THREE.TOUCH.DOLLY_PAN
+                  }}
+                />
                 
                 {/* Lighting */}
                 <Lighting />
