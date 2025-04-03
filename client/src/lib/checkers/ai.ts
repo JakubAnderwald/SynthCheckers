@@ -48,45 +48,35 @@ const evaluateBoard = (pieces: Piece[], color: PieceColor): number => {
 
 // Helper to get all possible moves including captures
 const getAllMoves = (pieces: Piece[], color: PieceColor): Move[] => {
-  const allMoves: Move[] = [];
-  const piecesThatCanCapture = getPiecesThatCanCapture(pieces, color);
+  // Use the same validated move logic for consistency
+  const piecesWithValidMoves = getAllValidMovesForPlayer(pieces, color);
+  const allValidMoves: Move[] = [];
   
-  // If captures are available, only return capture moves
-  if (piecesThatCanCapture.length > 0) {
-    for (const piece of piecesThatCanCapture) {
-      const capturePositions = getCapturePositions(piece, pieces);
+  for (const { piece, moves } of piecesWithValidMoves) {
+    for (const to of moves) {
+      // Calculate if this is a capture move
+      let capturedPiece: Piece | undefined;
       
-      for (const to of capturePositions) {
-        // Calculate the captured piece position
-        const capturedRow = (piece.position.row + to.row) / 2;
-        const capturedCol = (piece.position.col + to.col) / 2;
-        const capturedPiece = pieces.find(p => 
-          p.position.row === capturedRow && 
-          p.position.col === capturedCol
+      // Check if this is a capture move by examining if it jumps over a piece
+      if (Math.abs(piece.position.row - to.row) > 1) {
+        const midRow = (piece.position.row + to.row) / 2;
+        const midCol = (piece.position.col + to.col) / 2;
+        capturedPiece = pieces.find(p => 
+          p.position.row === midRow && 
+          p.position.col === midCol &&
+          p.color !== piece.color
         );
-        
-        allMoves.push({
-          from: piece.position,
-          to,
-          capturedPiece
-        });
       }
-    }
-  } else {
-    // Regular moves
-    const piecesWithMoves = getAllValidMovesForPlayer(pieces, color);
-    
-    for (const { piece, moves } of piecesWithMoves) {
-      for (const to of moves) {
-        allMoves.push({
-          from: piece.position,
-          to
-        });
-      }
+      
+      allValidMoves.push({
+        from: piece.position,
+        to,
+        capturedPiece
+      });
     }
   }
   
-  return allMoves;
+  return allValidMoves;
 };
 
 // Minimax algorithm with alpha-beta pruning
