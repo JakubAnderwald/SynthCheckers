@@ -101,6 +101,26 @@ const SettingsMenu: React.FC = () => {
             </div>
           </div>
           
+          {/* Debug Mode */}
+          <div>
+            <h3 className="text-lg sm:text-xl mb-3 sm:mb-4 text-neon-purple">Debug Mode</h3>
+            
+            <div className="flex items-center justify-between">
+              <label className="text-white text-sm sm:text-base">Enable Debug Controls</label>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="sr-only peer"
+                  checked={settings.debugMode}
+                  onChange={() => updateSettings({ debugMode: !settings.debugMode })}
+                />
+                <div className="w-10 sm:w-11 h-5 sm:h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 sm:after:h-5 after:w-4 sm:after:w-5 after:transition-all peer-checked:bg-neon-purple"></div>
+              </label>
+            </div>
+            
+            <p className="text-gray-400 text-xs sm:text-sm mt-2">Debug Mode allows you to inspect game state and make special moves for testing purposes.</p>
+          </div>
+          
           {/* Controls Info */}
           <div>
             <h3 className="text-lg sm:text-xl mb-2 sm:mb-3 text-neon-blue">Controls</h3>

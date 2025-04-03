@@ -25,7 +25,8 @@ import { useAudio } from "./useAudio";
 const initialSettings: GameSettings = {
   musicEnabled: true,
   soundEnabled: true,
-  difficulty: 'medium'
+  difficulty: 'medium',
+  debugMode: false
 };
 
 const initialState: BoardState = {

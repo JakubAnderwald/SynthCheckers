@@ -27,6 +27,7 @@ export interface GameSettings {
   musicEnabled: boolean;
   soundEnabled: boolean;
   difficulty: 'easy' | 'medium' | 'hard';
+  debugMode: boolean;
 }
 
 export interface BoardState {

@@ -12,23 +12,29 @@ const DebugControls: React.FC = () => {
   const gameState = useCheckersStore(state => state.gameState);
   const currentPlayer = useCheckersStore(state => state.currentPlayer);
   const initGame = useCheckersStore(state => state.initGame);
+  const settings = useCheckersStore(state => state.settings);
   
-  const [debugMode, setDebugMode] = useState(false);
+  const [debugPanelOpen, setDebugPanelOpen] = useState(false);
   
   // Filter for only current player's pieces
   const currentPlayerPieces = pieces.filter(piece => piece.color === currentPlayer);
   
-  // Always show the debug button
-  if (!debugMode) {
+  // Don't render anything if debug mode is disabled in settings
+  if (!settings.debugMode) {
+    return null;
+  }
+  
+  // Show the debug button when panel is closed
+  if (!debugPanelOpen) {
     return (
       <div className="fixed top-4 right-4 z-50">
         <Button 
-          onClick={() => setDebugMode(true)}
+          onClick={() => setDebugPanelOpen(true)}
           variant="destructive"
           size="sm"
           className="glow-text glow-border"
         >
-          Debug Mode
+          Debug Panel
         </Button>
       </div>
     );
@@ -41,7 +47,7 @@ const DebugControls: React.FC = () => {
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-bold text-white">Debug Controls</h3>
           <Button 
-            onClick={() => setDebugMode(false)}
+            onClick={() => setDebugPanelOpen(false)}
             variant="ghost"
             size="sm"
           >
@@ -71,7 +77,7 @@ const DebugControls: React.FC = () => {
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-lg font-bold">Debug Controls</h3>
         <Button 
-          onClick={() => setDebugMode(false)}
+          onClick={() => setDebugPanelOpen(false)}
           variant="ghost"
           size="sm"
         >
