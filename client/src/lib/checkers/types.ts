@@ -41,3 +41,10 @@ export interface BoardState {
   settingsOpen: boolean;
   settings: GameSettings;
 }
+
+// Declare window type extension for AI timeout
+declare global {
+  interface Window {
+    aiTurnTimeout?: ReturnType<typeof setTimeout>;
+  }
+}

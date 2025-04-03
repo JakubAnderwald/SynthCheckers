@@ -9,6 +9,9 @@ import {
   GameState,
   GameSettings
 } from "../checkers/types";
+
+// This import ensures the window interface extension is included
+import '../checkers/types';
 import { 
   initializeBoard, 
   getValidMoves, 
@@ -265,8 +268,16 @@ export const useCheckersStore = create<BoardState & {
           // If it's AI's turn in single player mode, trigger AI move
           if (gameMode === 'single' && nextPlayer === 'blue') {
             // Add a small delay to make the AI move feel more natural
-            setTimeout(() => {
-              get().aiTurn();
+            // Clear any existing timeouts to prevent multiple AI moves
+            if (window.aiTurnTimeout) {
+              clearTimeout(window.aiTurnTimeout);
+            }
+            
+            window.aiTurnTimeout = setTimeout(() => {
+              // Only proceed if we're still in AI turn state
+              if (get().gameState === 'ai_turn') {
+                get().aiTurn();
+              }
             }, 800);
           }
         }
@@ -300,14 +311,30 @@ export const useCheckersStore = create<BoardState & {
         if (pieceToMove) {
           console.log("AI will move piece:", pieceToMove.id, "from", pieceToMove.position, "to", aiMove.to);
           
-          // First select the piece
+          // Calculate valid moves for the selected piece
+          const mustCapturePieces = mustCapture(pieces, 'blue');
+          const validMovesForPiece = getValidMoves(pieceToMove, pieces, mustCapturePieces);
+          
+          console.log("Valid moves for AI piece:", validMovesForPiece.map(move => `[${move.row},${move.col}]`));
+          
+          // Make sure the AI move is in the valid moves list
+          const moveIsValid = validMovesForPiece.some(
+            move => move.row === aiMove.to.row && move.col === aiMove.to.col
+          );
+          
+          if (!moveIsValid) {
+            console.error("AI selected an invalid move:", aiMove.to);
+            return; // Don't proceed with an invalid move
+          }
+          
+          // First select the piece with calculated valid moves
           set({
             selectedPiece: pieceToMove,
             pieces: pieces.map(p => ({
               ...p,
               isSelected: p.id === pieceToMove.id
             })),
-            validMoves: [] // Reset valid moves to prevent multiple highlights
+            validMoves: validMovesForPiece // Set the valid moves so the move can be validated
           });
           
           // Then move it after a brief delay to visualize the selection
@@ -355,6 +382,12 @@ export const useCheckersStore = create<BoardState & {
       const audioStore = useAudio.getState();
       if (audioStore.backgroundMusic) {
         audioStore.backgroundMusic.pause();
+      }
+      
+      // Clear any pending AI turn timeouts
+      if (window.aiTurnTimeout) {
+        clearTimeout(window.aiTurnTimeout);
+        window.aiTurnTimeout = undefined;
       }
       
       // Reset game state
