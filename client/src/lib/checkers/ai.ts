@@ -197,6 +197,48 @@ export const getAIMove = (
 ): Move | null => {
   console.log(`Finding AI move for ${aiColor} with difficulty ${difficulty}`);
   
+  // Get all valid moves using the same logic as the game
+  const piecesWithValidMoves = getAllValidMovesForPlayer(pieces, aiColor);
+  
+  // If no valid moves, return null
+  if (piecesWithValidMoves.length === 0) {
+    console.log("No valid moves found for AI");
+    return null;
+  }
+  
+  // Convert to the Move format for processing
+  const allValidMoves: Move[] = [];
+  for (const { piece, moves } of piecesWithValidMoves) {
+    for (const to of moves) {
+      // Calculate if this is a capture move
+      let capturedPiece: Piece | undefined;
+      
+      // Check if this is a capture move by examining if it jumps over a piece
+      if (Math.abs(piece.position.row - to.row) > 1) {
+        const midRow = (piece.position.row + to.row) / 2;
+        const midCol = (piece.position.col + to.col) / 2;
+        capturedPiece = pieces.find(p => 
+          p.position.row === midRow && 
+          p.position.col === midCol &&
+          p.color !== piece.color
+        );
+      }
+      
+      allValidMoves.push({
+        from: piece.position,
+        to,
+        capturedPiece
+      });
+    }
+  }
+  
+  console.log(`Found ${allValidMoves.length} verified valid moves for AI`);
+  
+  // No valid moves
+  if (allValidMoves.length === 0) {
+    return null;
+  }
+  
   // Determine search depth based on difficulty
   let depth = 1; // Use minimal depth for reliable, quick moves
   if (difficulty === 'medium') depth = 2;
@@ -205,24 +247,23 @@ export const getAIMove = (
   // Add randomness for easy difficulty
   if (difficulty === 'easy') {
     console.log("Easy mode - selecting random move");
-    const allMoves = getAllMoves(pieces, aiColor);
     
-    if (allMoves.length > 0) {
-      console.log(`Found ${allMoves.length} possible moves for AI`);
-      // Select from captures first if available
-      const captureMoves = allMoves.filter(move => move.capturedPiece);
-      
-      if (captureMoves.length > 0) {
-        console.log("Selecting random capture move");
-        const randomIndex = Math.floor(Math.random() * captureMoves.length);
-        return captureMoves[randomIndex];
-      }
-      
-      // Otherwise select a random move
-      const randomIndex = Math.floor(Math.random() * allMoves.length);
-      return allMoves[randomIndex];
+    // Select from captures first if available
+    const captureMoves = allValidMoves.filter(move => move.capturedPiece);
+    
+    if (captureMoves.length > 0) {
+      console.log("Selecting random capture move");
+      const randomIndex = Math.floor(Math.random() * captureMoves.length);
+      const selectedMove = captureMoves[randomIndex];
+      console.log("AI selected move:", selectedMove);
+      return selectedMove;
     }
-    return null;
+    
+    // Otherwise select a random move
+    const randomIndex = Math.floor(Math.random() * allValidMoves.length);
+    const selectedMove = allValidMoves[randomIndex];
+    console.log("AI selected move:", selectedMove);
+    return selectedMove;
   }
   
   // For medium and hard, use minimax with appropriate depth
@@ -231,9 +272,26 @@ export const getAIMove = (
   
   if (result.move) {
     console.log("Minimax selected move:", result.move, "with score:", result.score);
-    return result.move;
+    
+    // Verify the minimax move is valid
+    const isValidMove = allValidMoves.some(
+      move => move.from.row === result.move!.from.row && 
+              move.from.col === result.move!.from.col &&
+              move.to.row === result.move!.to.row && 
+              move.to.col === result.move!.to.col
+    );
+    
+    if (isValidMove) {
+      return result.move;
+    } else {
+      console.log("Minimax selected an invalid move, using a random valid move instead");
+      const randomIndex = Math.floor(Math.random() * allValidMoves.length);
+      return allValidMoves[randomIndex];
+    }
   }
   
-  console.log("No valid moves found for AI");
-  return null;
+  // If minimax failed, fallback to a random valid move
+  console.log("Minimax failed, selecting a random valid move");
+  const randomIndex = Math.floor(Math.random() * allValidMoves.length);
+  return allValidMoves[randomIndex];
 };
