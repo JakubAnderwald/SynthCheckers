@@ -94,7 +94,19 @@ const MainMenu: React.FC = () => {
         {/* Footer - Hide on small mobile screens to save space */}
         <div className={`mt-6 sm:mt-12 text-xs sm:text-sm text-gray-400 text-center ${isMobile ? 'mb-4' : ''}`}>
           <p>{isMobile ? 'Tap to select pieces and move' : 'Use arrow keys to navigate and Space/Enter to select.'}</p>
-          <p className="mt-2">© 2023 Synth Checkers</p>
+          <p className="mt-2">
+            <a 
+              href="https://buymeacoffee.com/jakubanderwald" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-neon-blue hover:text-neon-pink transition-colors"
+              style={{ 
+                textShadow: `0 0 5px ${colors.neon.blue}`,
+              }}
+            >
+              ☕ Enjoying the game? Buy me a coffee!
+            </a>
+          </p>
         </div>
       </div>
     </div>
