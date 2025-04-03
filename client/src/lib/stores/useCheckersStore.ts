@@ -298,83 +298,53 @@ export const useCheckersStore = create<BoardState & {
     aiTurn: () => {
       const { pieces, settings } = get();
       
-      console.log("AI turn started");
+      console.log("AI turn started with safe implementation");
       
-      // Get AI's best move
-      const aiMove = getAIMove(pieces, 'blue', settings.difficulty);
+      // Find all valid moves for the AI (blue pieces)
+      const validMovesInfo = getAllValidMovesForPlayer(pieces, 'blue');
       
-      if (aiMove) {
-        console.log("AI selected move:", aiMove);
+      if (validMovesInfo.length === 0) {
+        console.log("AI has no valid moves, player wins!");
         
-        const pieceToMove = getPieceAtPosition(pieces, aiMove.from);
+        set({
+          winner: 'red',
+          gameState: 'game_over'
+        });
         
-        if (pieceToMove) {
-          console.log("AI will move piece:", pieceToMove.id, "from", pieceToMove.position, "to", aiMove.to);
-          
-          // Calculate valid moves for the selected piece
-          const mustCapturePieces = mustCapture(pieces, 'blue');
-          const validMovesForPiece = getValidMoves(pieceToMove, pieces, mustCapturePieces);
-          
-          console.log("Valid moves for AI piece:", validMovesForPiece.map(move => `[${move.row},${move.col}]`));
-          
-          // Make sure the AI move is in the valid moves list
-          const moveIsValid = validMovesForPiece.some(
-            move => move.row === aiMove.to.row && move.col === aiMove.to.col
-          );
-          
-          if (!moveIsValid) {
-            console.error("AI selected an invalid move:", aiMove.to);
-            return; // Don't proceed with an invalid move
-          }
-          
-          // First select the piece with calculated valid moves
-          set({
-            selectedPiece: pieceToMove,
-            pieces: pieces.map(p => ({
-              ...p,
-              isSelected: p.id === pieceToMove.id
-            })),
-            validMoves: validMovesForPiece // Set the valid moves so the move can be validated
-          });
-          
-          // Then move it after a brief delay to visualize the selection
-          setTimeout(() => {
-            console.log("AI executing move now");
-            // Make one single move
-            get().movePiece(aiMove.to);
-          }, 600); // Increased delay for better visualization
+        // Play success sound for winning
+        if (settings.soundEnabled) {
+          console.log("Playing game over success sound");
+          const audioStore = useAudio.getState();
+          audioStore.playSuccess();
         }
-      } else {
-        console.log("AI could not find a valid move");
-        
-        // If AI can't move, check for win condition
-        const hasValidMoves = getAllValidMovesForPlayer(pieces, 'blue').length > 0;
-        
-        if (!hasValidMoves) {
-          console.log("AI has no valid moves, player wins!");
-          
-          set({
-            winner: 'red',
-            gameState: 'game_over'
-          });
-          
-          // Play success sound for winning on AI defeat
-          if (settings.soundEnabled) {
-            console.log("Playing game over success sound (AI defeated)");
-            const audioStore = useAudio.getState();
-            audioStore.playSuccess();
-            
-            // Try a direct play as well for redundancy
-            try {
-              const tempSound = new Audio("/sounds/success.mp3");
-              tempSound.volume = 0.8;
-              tempSound.play().catch(e => console.log("Direct success sound error:", e));
-            } catch (e) {
-              console.error("Failed to create temp success sound:", e);
-            }
-          }
-        }
+        return;
       }
+      
+      // Choose a random piece and move
+      const randomPieceIndex = Math.floor(Math.random() * validMovesInfo.length);
+      const { piece, moves } = validMovesInfo[randomPieceIndex];
+      
+      // Choose a random move for this piece
+      const randomMoveIndex = Math.floor(Math.random() * moves.length);
+      const movePosition = moves[randomMoveIndex];
+      
+      console.log("AI will move:", piece.id, "from", piece.position, "to", movePosition);
+      
+      // First select the piece
+      set({
+        selectedPiece: piece,
+        pieces: pieces.map(p => ({
+          ...p,
+          isSelected: p.id === piece.id
+        })),
+        validMoves: moves
+      });
+      
+      // Then make the move after a brief delay
+      setTimeout(() => {
+        console.log("AI executing move now");
+        get().movePiece(movePosition);
+      }, 600);
     },
     
     returnToMenu: () => {
