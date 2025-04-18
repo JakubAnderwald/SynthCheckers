@@ -58,6 +58,24 @@ const Piece: React.FC<PieceProps> = ({ piece, onClick }) => {
   
   return (
     <group position={position}>
+      {/* Invisible larger touch area for mobile devices */}
+      <mesh
+        position={[0, 0.1, 0]}
+        onClick={(e) => {
+          e.stopPropagation();
+          console.log('Touch area clicked for piece:', piece.id);
+          onClick();
+        }}
+        onPointerDown={(e) => {
+          e.stopPropagation();
+          if (e.nativeEvent instanceof TouchEvent) {
+            onClick();
+          }
+        }}
+      >
+        <cylinderGeometry args={[0.45, 0.45, 0.05, 32]} />
+        <meshBasicMaterial transparent opacity={0} />
+      </mesh>
       {/* Glow effect beneath the piece */}
       <mesh 
         position={[0, 0.05, 0]}

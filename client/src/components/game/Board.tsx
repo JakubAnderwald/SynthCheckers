@@ -185,7 +185,7 @@ const Board: React.FC = () => {
             isKeyboardFocused={keyboardFocus.row === row && keyboardFocus.col === col}
             isHovered={hoveredSquare?.row === row && hoveredSquare?.col === col}
             onSquareClick={() => {
-              console.log(`Square clicked: row=${row}, col=${col}`);
+              console.log(`Square clicked: row=${row}, col=${col}`, 'touch-friendly event');
               
               // If this is a valid move for the selected piece, move there
               if (selectedPiece && validMoves.some(move => move.row === row && move.col === col)) {

@@ -79,7 +79,25 @@ const Square: React.FC<SquareProps> = ({
         // On touchscreens, immediately trigger click on touch down for better responsiveness
         if (e.nativeEvent instanceof TouchEvent) {
           console.log('Touch detected on square:', position);
-          onSquareClick();
+          // Small delay can help with touch accuracy on some devices
+          setTimeout(() => {
+            onSquareClick();
+          }, 10);
+        }
+      }}
+      // Adding an additional hit area with a larger size to improve touch targets
+      raycast={(raycaster, intersects) => {
+        // Increase the hit area for touch devices
+        const originalPosition = new THREE.Vector3(position[0], position[1], position[2]);
+        const distance = raycaster.ray.origin.distanceTo(originalPosition);
+        
+        if (distance < 20) { // Use a larger detection radius
+          const intersection = {
+            distance: distance,
+            point: new THREE.Vector3(position[0], position[1], position[2]),
+            object: meshRef.current
+          };
+          intersects.push(intersection as any);
         }
       }}
       onPointerUp={(e) => {
