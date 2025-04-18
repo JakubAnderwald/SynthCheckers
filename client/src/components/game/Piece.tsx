@@ -85,15 +85,26 @@ const Piece: React.FC<PieceProps> = ({ piece, onClick }) => {
         onPointerDown={(e) => {
           // Ensure we capture the pointer on mobile
           e.stopPropagation();
+          
+          // On touchscreens, specifically check if it's a touch event
+          if (e.nativeEvent instanceof TouchEvent) {
+            console.log('Touch detected on piece:', piece.id);
+            // Immediately trigger click on touch down to improve responsiveness
+            onClick();
+          }
         }}
         onPointerUp={(e) => {
           // Handle pointer up events on mobile
           console.log('Piece pointer up:', piece.id);
           e.stopPropagation();
-          // Delay to ensure it's a deliberate tap and not a quick touch
-          setTimeout(() => {
-            onClick();
-          }, 50);
+          
+          // We don't need timeout for mobile as we handle it in onPointerDown
+          // This is to prevent double-triggering
+          if (!(e.nativeEvent instanceof TouchEvent)) {
+            setTimeout(() => {
+              onClick();
+            }, 50);
+          }
         }}
         castShadow
         receiveShadow

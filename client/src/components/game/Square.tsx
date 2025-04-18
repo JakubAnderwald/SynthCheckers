@@ -64,15 +64,23 @@ const Square: React.FC<SquareProps> = ({
       onClick={(e) => {
         e.stopPropagation();
         console.log('Square clicked:', position);
-        // Add a small delay to ensure click is registered after any pointer events
-        setTimeout(() => {
-          onSquareClick();
-        }, 50);
+        // Only use setTimeout for non-touch events to avoid delays on mobile
+        if (!(e.nativeEvent instanceof TouchEvent)) {
+          setTimeout(() => {
+            onSquareClick();
+          }, 50);
+        }
       }}
       onPointerDown={(e) => {
         // Ensure we capture the pointer on mobile
         console.log('Square pointer down:', position);
         e.stopPropagation();
+        
+        // On touchscreens, immediately trigger click on touch down for better responsiveness
+        if (e.nativeEvent instanceof TouchEvent) {
+          console.log('Touch detected on square:', position);
+          onSquareClick();
+        }
       }}
       onPointerUp={(e) => {
         // Handle pointer up events as clicks on mobile

@@ -111,8 +111,9 @@ function App() {
   }, [setBackgroundMusic, setHitSound, setSuccessSound]);
 
   // Adjust camera position to show the entire board from a good angle
-  const cameraPosition: [number, number, number] = isMobile ? [3.5, 12, 3.5] : [3.5, 10, 12];
-  const cameraFov = isMobile ? 50 : 40;
+  // For mobile, use a more top-down view to improve touch accuracy
+  const cameraPosition: [number, number, number] = isMobile ? [3.5, 15, 3.5] : [3.5, 10, 12];
+  const cameraFov = isMobile ? 45 : 40;
   const targetPosition = new THREE.Vector3(3.5, 0, 3.5);
 
   return (
@@ -143,12 +144,12 @@ function App() {
                 <OrbitControls 
                   enableZoom={true}
                   enablePan={false}
-                  enableRotate={true}
-                  minPolarAngle={Math.PI / 6}
-                  maxPolarAngle={Math.PI / 2.5}
+                  enableRotate={isMobile ? false : true} // Restrict rotation on mobile for consistent touch mapping
+                  minPolarAngle={isMobile ? Math.PI / 3 : Math.PI / 6}
+                  maxPolarAngle={isMobile ? Math.PI / 3 : Math.PI / 2.5} // Fix the angle on mobile for consistent input
                   target={targetPosition}
-                  minDistance={5}
-                  maxDistance={20}
+                  minDistance={isMobile ? 10 : 5}
+                  maxDistance={isMobile ? 17 : 20}
                   // Configure touch controls differently for mobile
                   mouseButtons={{
                     LEFT: isMobile ? undefined : THREE.MOUSE.ROTATE,
