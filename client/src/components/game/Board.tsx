@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { useKeyboardControls } from '@react-three/drei';
 import * as THREE from 'three';
@@ -156,11 +156,14 @@ const Board: React.FC = () => {
     subscribeKeys
   ]);
   
-  // Check if we're on mobile to adjust the board rotation
-  const isMobile = typeof window !== 'undefined' && window.matchMedia(`(max-width: 767px)`).matches;
+  // Use our custom hook to check if we're on mobile
+  const { isMobile } = useCheckersStore(state => ({ isMobile: state.settings.debugMode ? false : typeof window !== 'undefined' && window.matchMedia(`(max-width: 767px)`).matches }));
   
   // For mobile, we counter-rotate by -45 degrees to correct the orientation
-  const boardRotation = isMobile ? new THREE.Euler(0, -Math.PI/4, 0) : new THREE.Euler(0, 0, 0);
+  // Use THREE.Euler object for correct typing
+  const boardRotation = useMemo(() => {
+    return isMobile ? new THREE.Euler(0, -Math.PI/4, 0) : new THREE.Euler(0, 0, 0);
+  }, [isMobile]);
   
   return (
     <group ref={boardRef} rotation={boardRotation}>
@@ -196,13 +199,13 @@ const Board: React.FC = () => {
               // If this is a valid move for the selected piece, move there
               if (selectedPiece && validMoves.some(move => 
                   (move.row === row && move.col === col) ||  // Exact position
-                  (move.row === row+1 && move.col === col)   // Offset for mobile Safari touch
+                  (isMobile && move.row === row+1 && move.col === col)   // Offset for mobile Safari touch
                 )) {
                 console.log('Valid move detected! Moving piece...');
                 // Use the actual valid move position from validMoves, not the clicked position
                 const actualMove = validMoves.find(move => 
                   (move.row === row && move.col === col) || 
-                  (move.row === row+1 && move.col === col)
+                  (isMobile && move.row === row+1 && move.col === col)
                 );
                 movePiece(actualMove || { row, col }); // Fallback to clicked position if not found
               } else {

@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { colors } from '@/lib/theme/colors';
@@ -20,7 +20,10 @@ const GridFloor: React.FC = () => {
   const isMobile = typeof window !== 'undefined' && window.matchMedia(`(max-width: 767px)`).matches;
   
   // For mobile, we counter-rotate by -45 degrees to correct the orientation
-  const gridRotation = isMobile ? new THREE.Euler(0, -Math.PI/4, 0) : new THREE.Euler(0, 0, 0);
+  // Use useMemo to optimize performance and avoid recreating on each render
+  const gridRotation = useMemo(() => {
+    return isMobile ? new THREE.Euler(0, -Math.PI/4, 0) : new THREE.Euler(0, 0, 0);
+  }, [isMobile]);
   
   // Create a large grid plane that extends to the horizon
   return (
