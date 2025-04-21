@@ -159,8 +159,10 @@ const Board: React.FC = () => {
   // Use our custom hook to check if we're on mobile
   const { isMobile } = useCheckersStore(state => ({ isMobile: state.settings.debugMode ? false : typeof window !== 'undefined' && window.matchMedia(`(max-width: 767px)`).matches }));
   
-  // For mobile, we counter-rotate by -45 degrees to correct the orientation
-  // Use THREE.Euler object for correct typing
+  // For mobile, we counter-rotate by -45 degrees to fix the orientation issue
+  // By rotating the board counter-clockwise by 45 degrees (negative PI/4), 
+  // we cancel out the 45-degree clockwise rotation that appears on mobile devices
+  // This ensures the board is oriented properly with rows running horizontally in the view
   const boardRotation = useMemo(() => {
     return isMobile ? new THREE.Euler(0, -Math.PI/4, 0) : new THREE.Euler(0, 0, 0);
   }, [isMobile]);
@@ -213,7 +215,7 @@ const Board: React.FC = () => {
                 // Check both exact position and slightly offset position for better mobile touch support
                 const pieceAtPosition = pieces.find(
                   p => (p.position.row === row && p.position.col === col) || 
-                       (p.position.row === row+1 && p.position.col === col) // Check one row ahead for Safari touch
+                       (isMobile && p.position.row === row+1 && p.position.col === col) // Check one row ahead for Safari touch
                 );
                 
                 if (pieceAtPosition) {

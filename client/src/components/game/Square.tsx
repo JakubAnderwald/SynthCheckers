@@ -24,6 +24,9 @@ const Square: React.FC<SquareProps> = ({
   onSquareHover,
   onSquareUnhover
 }) => {
+  // Check if we're on mobile
+  const isMobile = typeof window !== 'undefined' && window.matchMedia(`(max-width: 767px)`).matches;
+  
   // Use original position without any modifications
   const position = originalPosition;
   const meshRef = useRef<THREE.Mesh>(null);
@@ -71,8 +74,14 @@ const Square: React.FC<SquareProps> = ({
 
       onPointerUp={(e) => {
         // Handle pointer up events as clicks on mobile
-        console.log('Square pointer up:', position);
-        e.stopPropagation();
+        if (isMobile) {
+          console.log('Square pointer up (mobile):', position);
+          e.stopPropagation();
+          onSquareClick(); // Execute click on pointer up for mobile
+        } else {
+          console.log('Square pointer up (desktop):', position);
+          e.stopPropagation();
+        }
       }}
       onPointerOver={(e) => {
         e.stopPropagation();
