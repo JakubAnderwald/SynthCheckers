@@ -22,13 +22,12 @@ const GridFloor: React.FC = () => {
     return typeof window !== 'undefined' && window.matchMedia(`(max-width: 767px)`).matches;
   }, []);
   
-  // Apply the same counter-rotation as the Board component for mobile
-  // By rotating counter-clockwise by 45 degrees (negative PI/4), 
-  // we cancel out the 45-degree clockwise rotation that appears on mobile devices
-  // This maintains alignment with the corrected board orientation
+  // Keep grid aligned with the board for both mobile and desktop
+  // Using a pure top-down view with no rotation for mobile
+  // This ensures consistent perspective across all device types
   const gridRotation = useMemo(() => {
-    return isMobile ? new THREE.Euler(0, -Math.PI/4, 0) : new THREE.Euler(0, 0, 0);
-  }, [isMobile]);
+    return new THREE.Euler(0, 0, 0);
+  }, []);
   
   // Create a large grid plane that extends to the horizon
   return (

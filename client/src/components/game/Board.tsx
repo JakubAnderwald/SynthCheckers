@@ -163,11 +163,11 @@ const Board: React.FC = () => {
   }, []);
   
   // For mobile, we counter-rotate by -45 degrees to fix the orientation issue
-  // By rotating the board counter-clockwise by 45 degrees (negative PI/4), 
-  // we cancel out the 45-degree clockwise rotation that appears on mobile devices
-  // This ensures the board is oriented properly with rows running horizontally in the view
+  // On mobile, we've observed that the board still needs a different rotation
+  // Using a full top-down camera position with no rotation gives the clearest view
+  // This ensures the board is oriented properly with the correct perspective
   const boardRotation = useMemo(() => {
-    return isMobile ? new THREE.Euler(0, -Math.PI/4, 0) : new THREE.Euler(0, 0, 0);
+    return isMobile ? new THREE.Euler(0, 0, 0) : new THREE.Euler(0, 0, 0);
   }, [isMobile]);
   
   return (
