@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { getThreeColor } from '@/lib/theme/colors';
@@ -24,8 +24,10 @@ const Square: React.FC<SquareProps> = ({
   onSquareHover,
   onSquareUnhover
 }) => {
-  // Check if we're on mobile
-  const isMobile = typeof window !== 'undefined' && window.matchMedia(`(max-width: 767px)`).matches;
+  // Check if we're on mobile - use useMemo to prevent recalculation on every render
+  const isMobile = useMemo(() => {
+    return typeof window !== 'undefined' && window.matchMedia(`(max-width: 767px)`).matches;
+  }, []);
   
   // Use original position without any modifications
   const position = originalPosition;

@@ -17,7 +17,10 @@ const GridFloor: React.FC = () => {
   });
   
   // Check if we're on mobile to adjust the grid rotation
-  const isMobile = typeof window !== 'undefined' && window.matchMedia(`(max-width: 767px)`).matches;
+  // Use useMemo to cache the result and prevent re-computation on every render
+  const isMobile = useMemo(() => {
+    return typeof window !== 'undefined' && window.matchMedia(`(max-width: 767px)`).matches;
+  }, []);
   
   // Apply the same counter-rotation as the Board component for mobile
   // By rotating counter-clockwise by 45 degrees (negative PI/4), 

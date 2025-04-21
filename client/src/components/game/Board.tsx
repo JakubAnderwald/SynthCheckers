@@ -156,8 +156,11 @@ const Board: React.FC = () => {
     subscribeKeys
   ]);
   
-  // Use our custom hook to check if we're on mobile
-  const { isMobile } = useCheckersStore(state => ({ isMobile: state.settings.debugMode ? false : typeof window !== 'undefined' && window.matchMedia(`(max-width: 767px)`).matches }));
+  // Check if we're on mobile using a simple flag
+  const isMobile = useMemo(() => {
+    const settings = useCheckersStore.getState().settings;
+    return settings.debugMode ? false : typeof window !== 'undefined' && window.matchMedia(`(max-width: 767px)`).matches;
+  }, []);
   
   // For mobile, we counter-rotate by -45 degrees to fix the orientation issue
   // By rotating the board counter-clockwise by 45 degrees (negative PI/4), 
