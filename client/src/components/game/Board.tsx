@@ -163,12 +163,11 @@ const Board: React.FC = () => {
   }, []);
   
   // For mobile, we counter-rotate by -45 degrees to fix the orientation issue
-  // Fine-tune the rotation angle to get perfect alignment
-  // Slightly more than 45 degrees to compensate for the counter-clockwise offset
-  // This should give us a perfectly aligned board
+  // For mobile, use no rotation to get a clean top-down view
+  // This is a more reliable approach across different devices
   const boardRotation = useMemo(() => {
-    return isMobile ? new THREE.Euler(0, Math.PI/4 + Math.PI/36, 0) : new THREE.Euler(0, 0, 0);
-  }, [isMobile]);
+    return new THREE.Euler(0, 0, 0);
+  }, []);
   
   return (
     <group ref={boardRef} rotation={boardRotation}>

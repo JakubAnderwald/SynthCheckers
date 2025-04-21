@@ -22,12 +22,11 @@ const GridFloor: React.FC = () => {
     return typeof window !== 'undefined' && window.matchMedia(`(max-width: 767px)`).matches;
   }, []);
   
-  // Apply the same rotation as the board for consistency
-  // Fine-tune the rotation angle to match the board exactly
-  // Using PI/4 + PI/36 (45 + 5 degrees) to correct alignment
+  // Keep grid aligned with the board (no rotation)
+  // This is the most reliable approach for consistent alignment
   const gridRotation = useMemo(() => {
-    return isMobile ? new THREE.Euler(0, Math.PI/4 + Math.PI/36, 0) : new THREE.Euler(0, 0, 0);
-  }, [isMobile]);
+    return new THREE.Euler(0, 0, 0);
+  }, []);
   
   // Create a large grid plane that extends to the horizon
   return (

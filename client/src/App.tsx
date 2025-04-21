@@ -110,10 +110,9 @@ function App() {
     };
   }, [setBackgroundMusic, setHitSound, setSuccessSound]);
 
-  // Adjust camera position to show the entire board from a good angle
-  // For mobile, we need to ensure the board is centered after rotation
-  // Using a slightly offset position for mobile to compensate for rotation
-  const cameraPosition: [number, number, number] = isMobile ? [3.5, 20, 10] : [3.5, 10, 12];
+  // For mobile, use a true top-down view with no rotation for the board
+  // Instead, we'll position the camera to get the desired view
+  const cameraPosition: [number, number, number] = isMobile ? [3.5, 15, 3.5] : [3.5, 10, 12];
   // Increase FOV for mobile to ensure entire board is visible
   const cameraFov = isMobile ? 50 : 40;
   // Target the center of the board
