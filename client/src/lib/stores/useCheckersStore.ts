@@ -296,10 +296,43 @@ export const useCheckersStore = create<BoardState & {
     },
     
     aiTurn: () => {
-      const { pieces, settings } = get();
+      const { pieces, settings, selectedPiece } = get();
       
       console.log("AI turn started with safe implementation");
       
+      // If there's already a selected piece (chain capture scenario), use it 
+      if (selectedPiece && selectedPiece.color === 'blue') {
+        console.log("Continuing AI chain capture with piece:", selectedPiece.id);
+        
+        // Get valid capture moves for this piece
+        const validCaptureMoves = getValidMoves(selectedPiece, pieces, true);
+        
+        if (validCaptureMoves.length > 0) {
+          // Choose a capture move (either random for easy, or smart for medium/hard)
+          let movePosition;
+          
+          if (settings.difficulty === 'easy') {
+            // Random selection for easy mode
+            const randomMoveIndex = Math.floor(Math.random() * validCaptureMoves.length);
+            movePosition = validCaptureMoves[randomMoveIndex];
+          } else {
+            // For medium/hard, choose first available capture (could be enhanced with better logic)
+            movePosition = validCaptureMoves[0];
+          }
+          
+          console.log("AI continuing chain capture to:", movePosition);
+          
+          // Execute the move after a brief delay
+          setTimeout(() => {
+            console.log("AI executing chain capture move now");
+            get().movePiece(movePosition);
+          }, 600);
+          
+          return;
+        }
+      }
+      
+      // Otherwise, find a new move
       // Find all valid moves for the AI (blue pieces)
       const validMovesInfo = getAllValidMovesForPlayer(pieces, 'blue');
       
@@ -320,24 +353,57 @@ export const useCheckersStore = create<BoardState & {
         return;
       }
       
-      // Choose a random piece and move
-      const randomPieceIndex = Math.floor(Math.random() * validMovesInfo.length);
-      const { piece, moves } = validMovesInfo[randomPieceIndex];
+      // Choose a piece and move based on difficulty
+      let pieceToMove, movePosition;
       
-      // Choose a random move for this piece
-      const randomMoveIndex = Math.floor(Math.random() * moves.length);
-      const movePosition = moves[randomMoveIndex];
+      if (settings.difficulty === 'easy') {
+        // Choose a random piece and move
+        const randomPieceIndex = Math.floor(Math.random() * validMovesInfo.length);
+        const { piece, moves } = validMovesInfo[randomPieceIndex];
+        
+        // Choose a random move for this piece
+        const randomMoveIndex = Math.floor(Math.random() * moves.length);
+        movePosition = moves[randomMoveIndex];
+        pieceToMove = piece;
+      } else {
+        // For medium and hard, prioritize capture moves
+        // Find pieces that can capture
+        const captureMovesInfo = validMovesInfo.filter(
+          info => info.moves.some(move => 
+            Math.abs(move.row - info.piece.position.row) > 1
+          )
+        );
+        
+        if (captureMovesInfo.length > 0) {
+          // Choose first piece that can capture (or random for variety)
+          const { piece, moves } = captureMovesInfo[0];
+          
+          // Filter for capture moves
+          const captureMoves = moves.filter(
+            move => Math.abs(move.row - piece.position.row) > 1
+          );
+          
+          // Choose first capture move (or random for variety)
+          movePosition = captureMoves[0];
+          pieceToMove = piece;
+        } else {
+          // No captures available, choose first available move
+          const { piece, moves } = validMovesInfo[0];
+          movePosition = moves[0];
+          pieceToMove = piece;
+        }
+      }
       
-      console.log("AI will move:", piece.id, "from", piece.position, "to", movePosition);
+      console.log("AI will move:", pieceToMove.id, "from", pieceToMove.position, "to", movePosition);
       
       // First select the piece
       set({
-        selectedPiece: piece,
+        selectedPiece: pieceToMove,
         pieces: pieces.map(p => ({
           ...p,
-          isSelected: p.id === piece.id
+          isSelected: p.id === pieceToMove.id
         })),
-        validMoves: moves
+        validMoves: getValidMoves(pieceToMove, pieces)
       });
       
       // Then make the move after a brief delay
