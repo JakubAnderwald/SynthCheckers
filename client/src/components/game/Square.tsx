@@ -15,7 +15,7 @@ interface SquareProps {
 }
 
 const Square: React.FC<SquareProps> = ({
-  position,
+  position: originalPosition,
   color,
   isValidMove,
   isKeyboardFocused,
@@ -24,6 +24,14 @@ const Square: React.FC<SquareProps> = ({
   onSquareHover,
   onSquareUnhover
 }) => {
+  // Check if we're on mobile to adjust the touch hit area
+  const useIsMobile = typeof window !== 'undefined' && window.matchMedia(`(max-width: 767px)`).matches;
+  
+  // Adjust position for better touch detection on mobile Safari
+  // If on mobile, shift the touch hit position slightly to compensate for Safari touch offset
+  const position = useIsMobile 
+    ? [originalPosition[0], originalPosition[1], originalPosition[2] - 0.5]
+    : originalPosition;
   const meshRef = useRef<THREE.Mesh>(null);
   const materialRef = useRef<THREE.MeshStandardMaterial>(null);
   
@@ -64,42 +72,9 @@ const Square: React.FC<SquareProps> = ({
       onClick={(e) => {
         e.stopPropagation();
         console.log('Square clicked:', position);
-        // Only use setTimeout for non-touch events to avoid delays on mobile
-        if (!(e.nativeEvent instanceof TouchEvent)) {
-          setTimeout(() => {
-            onSquareClick();
-          }, 50);
-        }
+        onSquareClick();
       }}
-      onPointerDown={(e) => {
-        // Ensure we capture the pointer on mobile
-        console.log('Square pointer down:', position);
-        e.stopPropagation();
-        
-        // On touchscreens, immediately trigger click on touch down for better responsiveness
-        if (e.nativeEvent instanceof TouchEvent) {
-          console.log('Touch detected on square:', position);
-          // Small delay can help with touch accuracy on some devices
-          setTimeout(() => {
-            onSquareClick();
-          }, 10);
-        }
-      }}
-      // Adding an additional hit area with a larger size to improve touch targets
-      raycast={(raycaster, intersects) => {
-        // Increase the hit area for touch devices
-        const originalPosition = new THREE.Vector3(position[0], position[1], position[2]);
-        const distance = raycaster.ray.origin.distanceTo(originalPosition);
-        
-        if (distance < 20) { // Use a larger detection radius
-          const intersection = {
-            distance: distance,
-            point: new THREE.Vector3(position[0], position[1], position[2]),
-            object: meshRef.current
-          };
-          intersects.push(intersection as any);
-        }
-      }}
+
       onPointerUp={(e) => {
         // Handle pointer up events as clicks on mobile
         console.log('Square pointer up:', position);

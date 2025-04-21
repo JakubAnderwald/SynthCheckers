@@ -54,28 +54,13 @@ const Piece: React.FC<PieceProps> = ({ piece, onClick }) => {
   const threeGlowColor = getThreeColor(selectGlowColor);
   
   // Position based on the piece's position
-  const position: [number, number, number] = [piece.position.col, 0, piece.position.row];
+  // Adjust position for better touch detection on mobile Safari
+  const useIsMobile = typeof window !== 'undefined' && window.matchMedia(`(max-width: 767px)`).matches;
+  // If on mobile, shift the touch hit position slightly to compensate for Safari touch offset
+  const position: [number, number, number] = [piece.position.col, 0, useIsMobile ? piece.position.row - 0.75 : piece.position.row];
   
   return (
     <group position={position}>
-      {/* Invisible larger touch area for mobile devices */}
-      <mesh
-        position={[0, 0.1, 0]}
-        onClick={(e) => {
-          e.stopPropagation();
-          console.log('Touch area clicked for piece:', piece.id);
-          onClick();
-        }}
-        onPointerDown={(e) => {
-          e.stopPropagation();
-          if (e.nativeEvent instanceof TouchEvent) {
-            onClick();
-          }
-        }}
-      >
-        <cylinderGeometry args={[0.45, 0.45, 0.05, 32]} />
-        <meshBasicMaterial transparent opacity={0} />
-      </mesh>
       {/* Glow effect beneath the piece */}
       <mesh 
         position={[0, 0.05, 0]}
@@ -99,30 +84,6 @@ const Piece: React.FC<PieceProps> = ({ piece, onClick }) => {
           e.stopPropagation(); 
           console.log('Piece clicked:', piece.id, 'Color:', piece.color, 'Position:', piece.position);
           onClick();
-        }}
-        onPointerDown={(e) => {
-          // Ensure we capture the pointer on mobile
-          e.stopPropagation();
-          
-          // On touchscreens, specifically check if it's a touch event
-          if (e.nativeEvent instanceof TouchEvent) {
-            console.log('Touch detected on piece:', piece.id);
-            // Immediately trigger click on touch down to improve responsiveness
-            onClick();
-          }
-        }}
-        onPointerUp={(e) => {
-          // Handle pointer up events on mobile
-          console.log('Piece pointer up:', piece.id);
-          e.stopPropagation();
-          
-          // We don't need timeout for mobile as we handle it in onPointerDown
-          // This is to prevent double-triggering
-          if (!(e.nativeEvent instanceof TouchEvent)) {
-            setTimeout(() => {
-              onClick();
-            }, 50);
-          }
         }}
         castShadow
         receiveShadow
