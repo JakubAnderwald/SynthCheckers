@@ -216,13 +216,18 @@ export const useCheckersStore = create<BoardState & {
       console.log(`MULTI-CAPTURE DEBUG: Captured piece:`, capturedPiece);
       console.log(`MULTI-CAPTURE DEBUG: Became king:`, becameKing);
       
-      // Can only continue if:
+      // Special debug note for king promotion during chain capture
+      if (becameKing) {
+        console.log(`MULTI-CAPTURE DEBUG: This piece was just promoted to king during a capture!`);
+        console.log(`MULTI-CAPTURE DEBUG: According to our new rule, it can still capture if possible.`);
+      }
+      
+      // Can continue if:
       // 1. A piece was captured
-      // 2. The piece was NOT just promoted to a king (no extra move after promotion)
-      // 3. There are additional capture moves available
+      // 2. There are additional capture moves available
+      // Note: We're removing the restriction that prevented continuing after becoming a king
       const canJumpAgain = updatedPiece && 
                           capturedPiece && 
-                          !becameKing && 
                           canCaptureAgain(updatedPiece, newPieces);
       
       // Debug: Log the capture positions if relevant
