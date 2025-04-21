@@ -54,10 +54,7 @@ const Piece: React.FC<PieceProps> = ({ piece, onClick }) => {
   const threeGlowColor = getThreeColor(selectGlowColor);
   
   // Position based on the piece's position
-  // Adjust position for better touch detection on mobile Safari
-  const useIsMobile = typeof window !== 'undefined' && window.matchMedia(`(max-width: 767px)`).matches;
-  // If on mobile, shift the touch hit position slightly to compensate for Safari touch offset
-  const position: [number, number, number] = [piece.position.col, 0, useIsMobile ? piece.position.row - 0.75 : piece.position.row];
+  const position: [number, number, number] = [piece.position.col, 0, piece.position.row];
   
   return (
     <group position={position}>

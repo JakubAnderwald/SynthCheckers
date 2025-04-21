@@ -188,13 +188,23 @@ const Board: React.FC = () => {
               console.log(`Square clicked: row=${row}, col=${col}`, 'touch-friendly event');
               
               // If this is a valid move for the selected piece, move there
-              if (selectedPiece && validMoves.some(move => move.row === row && move.col === col)) {
+              if (selectedPiece && validMoves.some(move => 
+                  (move.row === row && move.col === col) ||  // Exact position
+                  (move.row === row+1 && move.col === col)   // Offset for mobile Safari touch
+                )) {
                 console.log('Valid move detected! Moving piece...');
-                movePiece({ row, col });
+                // Use the actual valid move position from validMoves, not the clicked position
+                const actualMove = validMoves.find(move => 
+                  (move.row === row && move.col === col) || 
+                  (move.row === row+1 && move.col === col)
+                );
+                movePiece(actualMove || { row, col }); // Fallback to clicked position if not found
               } else {
                 // Try to select a piece at this position
+                // Check both exact position and slightly offset position for better mobile touch support
                 const pieceAtPosition = pieces.find(
-                  p => p.position.row === row && p.position.col === col
+                  p => (p.position.row === row && p.position.col === col) || 
+                       (p.position.row === row+1 && p.position.col === col) // Check one row ahead for Safari touch
                 );
                 
                 if (pieceAtPosition) {

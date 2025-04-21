@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import { getThreeColor } from '@/lib/theme/colors';
 
 interface SquareProps {
-  position: [number, number, number];
+  position: [number, number, number] | readonly [number, number, number];
   color: string;
   isValidMove: boolean;
   isKeyboardFocused: boolean;
@@ -24,14 +24,8 @@ const Square: React.FC<SquareProps> = ({
   onSquareHover,
   onSquareUnhover
 }) => {
-  // Check if we're on mobile to adjust the touch hit area
-  const useIsMobile = typeof window !== 'undefined' && window.matchMedia(`(max-width: 767px)`).matches;
-  
-  // Adjust position for better touch detection on mobile Safari
-  // If on mobile, shift the touch hit position slightly to compensate for Safari touch offset
-  const position = useIsMobile 
-    ? [originalPosition[0], originalPosition[1], originalPosition[2] - 0.5]
-    : originalPosition;
+  // Use original position without any modifications
+  const position = originalPosition;
   const meshRef = useRef<THREE.Mesh>(null);
   const materialRef = useRef<THREE.MeshStandardMaterial>(null);
   
