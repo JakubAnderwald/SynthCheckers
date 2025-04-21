@@ -111,7 +111,8 @@ function App() {
   }, [setBackgroundMusic, setHitSound, setSuccessSound]);
 
   // Adjust camera position to show the entire board from a good angle
-  // For mobile, use a true top-down view for better touch precision
+  // For mobile, use a true top-down view for better touch precision and correct alignment
+  // The coordinates [x,y,z] align with the board's orientation (no 45-degree rotation)
   const cameraPosition: [number, number, number] = isMobile ? [3.5, 20, 3.5] : [3.5, 10, 12];
   const cameraFov = isMobile ? 35 : 40;
   const targetPosition = new THREE.Vector3(3.5, 0, 3.5);
@@ -150,6 +151,7 @@ function App() {
                   target={targetPosition}
                   minDistance={isMobile ? 10 : 5}
                   maxDistance={20}
+                  // No custom rotation - we'll handle rotation in the board component
                   // Configure touch controls differently for mobile
                   mouseButtons={{
                     LEFT: isMobile ? undefined : THREE.MOUSE.ROTATE,

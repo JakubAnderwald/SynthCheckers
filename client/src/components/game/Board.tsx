@@ -156,8 +156,14 @@ const Board: React.FC = () => {
     subscribeKeys
   ]);
   
+  // Check if we're on mobile to adjust the board rotation
+  const isMobile = typeof window !== 'undefined' && window.matchMedia(`(max-width: 767px)`).matches;
+  
+  // For mobile, we counter-rotate by -45 degrees to correct the orientation
+  const boardRotation = isMobile ? new THREE.Euler(0, -Math.PI/4, 0) : new THREE.Euler(0, 0, 0);
+  
   return (
-    <group ref={boardRef}>
+    <group ref={boardRef} rotation={boardRotation}>
       {/* Board base with glow effect */}
       <mesh receiveShadow position={[3.5, -0.1, 3.5]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[BOARD_SIZE + 0.5, BOARD_SIZE + 0.5]} />

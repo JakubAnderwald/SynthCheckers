@@ -16,9 +16,15 @@ const GridFloor: React.FC = () => {
     }
   });
   
+  // Check if we're on mobile to adjust the grid rotation
+  const isMobile = typeof window !== 'undefined' && window.matchMedia(`(max-width: 767px)`).matches;
+  
+  // For mobile, we counter-rotate by -45 degrees to correct the orientation
+  const gridRotation = isMobile ? new THREE.Euler(0, -Math.PI/4, 0) : new THREE.Euler(0, 0, 0);
+  
   // Create a large grid plane that extends to the horizon
   return (
-    <group ref={gridRef} position={[3.5, -0.5, 3.5]}>
+    <group ref={gridRef} position={[3.5, -0.5, 3.5]} rotation={gridRotation}>
       {/* Main grid floor */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
         <planeGeometry args={[100, 100, 100, 100]} />
