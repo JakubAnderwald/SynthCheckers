@@ -163,11 +163,11 @@ const Board: React.FC = () => {
   }, []);
   
   // For mobile, we counter-rotate by -45 degrees to fix the orientation issue
-  // Let's try a positive rotation to correct the orientation
-  // Applying a 45 degree (clockwise) rotation around the Y axis
-  // This is a different approach to fix the orientation issue
+  // Fine-tune the rotation angle to get perfect alignment
+  // Slightly more than 45 degrees to compensate for the counter-clockwise offset
+  // This should give us a perfectly aligned board
   const boardRotation = useMemo(() => {
-    return isMobile ? new THREE.Euler(0, Math.PI/4, 0) : new THREE.Euler(0, 0, 0);
+    return isMobile ? new THREE.Euler(0, Math.PI/4 + Math.PI/36, 0) : new THREE.Euler(0, 0, 0);
   }, [isMobile]);
   
   return (

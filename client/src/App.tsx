@@ -111,11 +111,12 @@ function App() {
   }, [setBackgroundMusic, setHitSound, setSuccessSound]);
 
   // Adjust camera position to show the entire board from a good angle
-  // For mobile, use a centered true top-down view for the best touch precision and board visibility
-  // We're positioning the camera directly above the board center for mobile
-  const cameraPosition: [number, number, number] = isMobile ? [3.5, 25, 3.5] : [3.5, 10, 12];
+  // For mobile, we need to ensure the board is centered after rotation
+  // Using a slightly offset position for mobile to compensate for rotation
+  const cameraPosition: [number, number, number] = isMobile ? [3.5, 20, 10] : [3.5, 10, 12];
   // Increase FOV for mobile to ensure entire board is visible
-  const cameraFov = isMobile ? 45 : 40;
+  const cameraFov = isMobile ? 50 : 40;
+  // Target the center of the board
   const targetPosition = new THREE.Vector3(3.5, 0, 3.5);
 
   return (

@@ -23,10 +23,10 @@ const GridFloor: React.FC = () => {
   }, []);
   
   // Apply the same rotation as the board for consistency
-  // Applying a 45 degree (clockwise) rotation around the Y axis for mobile
-  // This aligns with the board's rotation
+  // Fine-tune the rotation angle to match the board exactly
+  // Using PI/4 + PI/36 (45 + 5 degrees) to correct alignment
   const gridRotation = useMemo(() => {
-    return isMobile ? new THREE.Euler(0, Math.PI/4, 0) : new THREE.Euler(0, 0, 0);
+    return isMobile ? new THREE.Euler(0, Math.PI/4 + Math.PI/36, 0) : new THREE.Euler(0, 0, 0);
   }, [isMobile]);
   
   // Create a large grid plane that extends to the horizon
