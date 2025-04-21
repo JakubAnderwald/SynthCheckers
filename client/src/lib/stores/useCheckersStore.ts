@@ -20,7 +20,8 @@ import {
   mustCapture,
   canCaptureAgain,
   getPieceAtPosition,
-  getAllValidMovesForPlayer
+  getAllValidMovesForPlayer,
+  getCapturePositions
 } from "../checkers/rules";
 import { getAIMove } from "../checkers/ai";
 import { useAudio } from "./useAudio";
@@ -207,6 +208,14 @@ export const useCheckersStore = create<BoardState & {
       // Check if the piece can capture again
       const updatedPiece = newPieces.find(p => p.id === selectedPiece.id);
       
+      // Debug: Log state of the piece and board before checking for chain captures
+      console.log(`MULTI-CAPTURE DEBUG: Piece ID ${selectedPiece.id}`);
+      console.log(`MULTI-CAPTURE DEBUG: Found updated piece:`, updatedPiece);
+      console.log(`MULTI-CAPTURE DEBUG: Current player:`, currentPlayer);
+      console.log(`MULTI-CAPTURE DEBUG: Game state:`, get().gameState);
+      console.log(`MULTI-CAPTURE DEBUG: Captured piece:`, capturedPiece);
+      console.log(`MULTI-CAPTURE DEBUG: Became king:`, becameKing);
+      
       // Can only continue if:
       // 1. A piece was captured
       // 2. The piece was NOT just promoted to a king (no extra move after promotion)
@@ -216,15 +225,46 @@ export const useCheckersStore = create<BoardState & {
                           !becameKing && 
                           canCaptureAgain(updatedPiece, newPieces);
       
-      console.log(`Can jump again: ${canJumpAgain}, becameKing: ${becameKing}`);
+      // Debug: Log the capture positions if relevant
+      if (updatedPiece && capturedPiece) {
+        console.log(`MULTI-CAPTURE DEBUG: Possible capture positions:`, 
+          getCapturePositions(updatedPiece, newPieces));
+      }
+      
+      console.log(`MULTI-CAPTURE DEBUG: Can jump again: ${canJumpAgain}`);
       
       if (canJumpAgain) {
         // Same player continues if multiple captures are possible
+        const updatedValidMoves = getValidMoves(updatedPiece, newPieces, true);
+        console.log(`MULTI-CAPTURE DEBUG: Setting up for chain capture, valid moves:`, updatedValidMoves);
+        
         set({
           pieces: newPieces,
           selectedPiece: updatedPiece,
-          validMoves: getValidMoves(updatedPiece, newPieces, true)
+          validMoves: updatedValidMoves
         });
+        
+        // If it's the AI's turn and it has another capture
+        if (currentPlayer === 'blue' && gameMode === 'single') {
+          console.log(`MULTI-CAPTURE DEBUG: AI has another capture available, will execute it shortly`);
+          
+          // Set game state back to AI_TURN to ensure our AI handling logic triggers
+          set(state => ({
+            ...state,
+            gameState: 'ai_turn'
+          }));
+          
+          // Force an immediate AI turn to handle the chain capture
+          // Clear any existing timeouts first
+          if (window.aiTurnTimeout) {
+            clearTimeout(window.aiTurnTimeout);
+          }
+          
+          window.aiTurnTimeout = setTimeout(() => {
+            console.log(`MULTI-CAPTURE DEBUG: Executing AI chain capture now`);
+            get().aiTurn();
+          }, 800); // Matched with the normal AI turn delay
+        }
       } else {
         // Switch player
         const nextPlayer: PieceColor = currentPlayer === 'red' ? 'blue' : 'red';
@@ -233,6 +273,7 @@ export const useCheckersStore = create<BoardState & {
         const winner = checkForWinner(newPieces);
         
         if (winner) {
+          console.log(`MULTI-CAPTURE DEBUG: Game over, winner: ${winner}`);
           set({
             pieces: newPieces,
             selectedPiece: null,
@@ -257,16 +298,21 @@ export const useCheckersStore = create<BoardState & {
           }
         } else {
           // No winner yet, continue the game
+          console.log(`MULTI-CAPTURE DEBUG: Moving to next player: ${nextPlayer}`);
+          const newGameState = gameMode === 'single' && nextPlayer === 'blue' ? 'ai_turn' : 'playing';
+          
           set({
             pieces: newPieces,
             selectedPiece: null,
             validMoves: [],
             currentPlayer: nextPlayer,
-            gameState: gameMode === 'single' && nextPlayer === 'blue' ? 'ai_turn' : 'playing'
+            gameState: newGameState
           });
           
           // If it's AI's turn in single player mode, trigger AI move
           if (gameMode === 'single' && nextPlayer === 'blue') {
+            console.log(`MULTI-CAPTURE DEBUG: Starting new AI turn after delay`);
+            
             // Add a small delay to make the AI move feel more natural
             // Clear any existing timeouts to prevent multiple AI moves
             if (window.aiTurnTimeout) {
@@ -276,6 +322,7 @@ export const useCheckersStore = create<BoardState & {
             window.aiTurnTimeout = setTimeout(() => {
               // Only proceed if we're still in AI turn state
               if (get().gameState === 'ai_turn') {
+                console.log(`MULTI-CAPTURE DEBUG: Executing new AI turn now`);
                 get().aiTurn();
               }
             }, 800);
@@ -296,18 +343,27 @@ export const useCheckersStore = create<BoardState & {
     },
     
     aiTurn: () => {
-      const { pieces, settings, selectedPiece } = get();
+      const { pieces, settings, selectedPiece, gameState, validMoves } = get();
       
-      console.log("AI turn started with safe implementation");
+      console.log("AI TURN DEBUG: -------- AI TURN STARTED --------");
+      console.log("AI TURN DEBUG: Game state:", gameState);
+      console.log("AI TURN DEBUG: Selected piece:", selectedPiece);
+      console.log("AI TURN DEBUG: Valid moves:", validMoves);
       
       // If there's already a selected piece (chain capture scenario), use it 
       if (selectedPiece && selectedPiece.color === 'blue') {
-        console.log("Continuing AI chain capture with piece:", selectedPiece.id);
+        console.log("AI TURN DEBUG: Chain capture scenario detected");
+        console.log("AI TURN DEBUG: Piece ID:", selectedPiece.id);
+        console.log("AI TURN DEBUG: Piece position:", selectedPiece.position);
+        console.log("AI TURN DEBUG: Piece type:", selectedPiece.type);
         
         // Get valid capture moves for this piece
         const validCaptureMoves = getValidMoves(selectedPiece, pieces, true);
+        console.log("AI TURN DEBUG: Valid capture moves:", validCaptureMoves);
         
         if (validCaptureMoves.length > 0) {
+          console.log("AI TURN DEBUG: Found valid capture moves for chain capture");
+          
           // Choose a capture move (either random for easy, or smart for medium/hard)
           let movePosition;
           
@@ -315,20 +371,29 @@ export const useCheckersStore = create<BoardState & {
             // Random selection for easy mode
             const randomMoveIndex = Math.floor(Math.random() * validCaptureMoves.length);
             movePosition = validCaptureMoves[randomMoveIndex];
+            console.log("AI TURN DEBUG: Using random selection for easy mode:", movePosition);
           } else {
             // For medium/hard, choose first available capture (could be enhanced with better logic)
             movePosition = validCaptureMoves[0];
+            console.log("AI TURN DEBUG: Using first available for medium/hard mode:", movePosition);
           }
           
-          console.log("AI continuing chain capture to:", movePosition);
+          console.log("AI TURN DEBUG: Will continue chain capture to:", movePosition);
           
           // Execute the move after a brief delay
           setTimeout(() => {
-            console.log("AI executing chain capture move now");
+            console.log("AI TURN DEBUG: Executing chain capture move now");
             get().movePiece(movePosition);
           }, 600);
           
           return;
+        } else {
+          console.log("AI TURN DEBUG: No valid capture moves found for chain capture!");
+        }
+      } else {
+        console.log("AI TURN DEBUG: Not a chain capture scenario");
+        if (selectedPiece) {
+          console.log("AI TURN DEBUG: Selected piece color:", selectedPiece.color);
         }
       }
       
