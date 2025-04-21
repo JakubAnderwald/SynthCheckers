@@ -163,11 +163,11 @@ const Board: React.FC = () => {
   }, []);
   
   // For mobile, we counter-rotate by -45 degrees to fix the orientation issue
-  // On mobile, we've observed that the board still needs a different rotation
-  // Using a full top-down camera position with no rotation gives the clearest view
-  // This ensures the board is oriented properly with the correct perspective
+  // Let's try a positive rotation to correct the orientation
+  // Applying a 45 degree (clockwise) rotation around the Y axis
+  // This is a different approach to fix the orientation issue
   const boardRotation = useMemo(() => {
-    return isMobile ? new THREE.Euler(0, 0, 0) : new THREE.Euler(0, 0, 0);
+    return isMobile ? new THREE.Euler(0, Math.PI/4, 0) : new THREE.Euler(0, 0, 0);
   }, [isMobile]);
   
   return (
@@ -204,13 +204,19 @@ const Board: React.FC = () => {
               // If this is a valid move for the selected piece, move there
               if (selectedPiece && validMoves.some(move => 
                   (move.row === row && move.col === col) ||  // Exact position
-                  (isMobile && move.row === row+1 && move.col === col)   // Offset for mobile Safari touch
+                  (isMobile && ((move.row === row+1 && move.col === col) || 
+                   (move.row === row && move.col === col+1) ||
+                   (move.row === row-1 && move.col === col) ||
+                   (move.row === row && move.col === col-1)))   // Extended offset detection for mobile
                 )) {
                 console.log('Valid move detected! Moving piece...');
                 // Use the actual valid move position from validMoves, not the clicked position
                 const actualMove = validMoves.find(move => 
                   (move.row === row && move.col === col) || 
-                  (isMobile && move.row === row+1 && move.col === col)
+                  (isMobile && ((move.row === row+1 && move.col === col) || 
+                   (move.row === row && move.col === col+1) ||
+                   (move.row === row-1 && move.col === col) ||
+                   (move.row === row && move.col === col-1)))
                 );
                 movePiece(actualMove || { row, col }); // Fallback to clicked position if not found
               } else {
@@ -218,7 +224,11 @@ const Board: React.FC = () => {
                 // Check both exact position and slightly offset position for better mobile touch support
                 const pieceAtPosition = pieces.find(
                   p => (p.position.row === row && p.position.col === col) || 
-                       (isMobile && p.position.row === row+1 && p.position.col === col) // Check one row ahead for Safari touch
+                       // More generous detection for mobile touches in all directions
+                       (isMobile && ((p.position.row === row+1 && p.position.col === col) || 
+                                    (p.position.row === row && p.position.col === col+1) ||
+                                    (p.position.row === row-1 && p.position.col === col) ||
+                                    (p.position.row === row && p.position.col === col-1)))
                 );
                 
                 if (pieceAtPosition) {
