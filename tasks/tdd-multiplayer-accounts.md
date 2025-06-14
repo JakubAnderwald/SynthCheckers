@@ -465,7 +465,7 @@ service cloud.firestore {
 - Friend system workflows with real-time updates
 - Matchmaking algorithm with Firestore queries
 
-### E2E Tests (Firebase Emulator Suite)
+### E2E Tests (Production Firebase)
 - Two-player game completion with Firestore real-time sync
 - Friend request and game invitation flows
 - Authentication persistence across browser sessions

@@ -40,9 +40,9 @@ Based on `prd-multiplayer-accounts.md` and `tdd-multiplayer-accounts.md`
 ### Notes
 
 - Unit tests should be placed alongside the code files they are testing
-- Use Firebase Emulator Suite for testing Firestore operations
+- Use production Firebase for testing Firestore operations
 - Run tests with `npm test` or `npm run test:firebase` for Firebase-specific tests
-- Firestore security rules testing requires Firebase CLI and emulator setup
+- Firestore security rules testing uses production Firebase with test data
 
 ## Tasks
 
@@ -51,7 +51,7 @@ Based on `prd-multiplayer-accounts.md` and `tdd-multiplayer-accounts.md`
   - [x] 1.2 Create Firebase project configuration file with environment variables
   - [x] 1.3 Initialize Firebase app instance in client application
   - [x] 1.4 Configure Firebase Hosting for deployment
-  - [x] 1.5 Set up Firebase Emulator Suite for local development and testing
+  - [x] 1.5 Configure production Firebase for development (emulators removed)
   - [x] 1.6 Create Firestore database in production mode (Manual: Firebase Console)
   - [x] 1.7 Enable Google OAuth provider in Firebase Authentication console (Manual: Firebase Console)
   - [x] 1.8 Create Firebase authentication service foundation

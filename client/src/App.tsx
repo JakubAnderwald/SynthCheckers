@@ -4,6 +4,7 @@ import { KeyboardControls, OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 import { useAudio } from "./lib/stores/useAudio";
 import { useCheckersStore } from "./lib/stores/useCheckersStore";
+import { AuthProvider } from "./contexts/AuthContext";
 import "@fontsource/inter";
 import MainMenu from "./components/ui/MainMenu";
 import Board from "./components/game/Board";
@@ -119,74 +120,76 @@ function App() {
   const targetPosition = new THREE.Vector3(3.5, 0, 3.5);
 
   return (
-    <div className="game-container">
-      {showCanvas && (
-        <KeyboardControls map={controls}>
-          {gameState === 'menu' && <MainMenu />}
-          
-          {(gameState === 'playing' || gameState === 'ai_turn' || gameState === 'game_over') && (
-            <>
-              <Canvas
-                shadows
-                camera={{
-                  position: cameraPosition,
-                  fov: cameraFov,
-                  near: 0.1,
-                  far: 1000
-                }}
-                gl={{
-                  antialias: true,
-                  powerPreference: "default"
-                }}
-              >
-                <color attach="background" args={["#0f0a2a"]} />
-                <fog attach="fog" args={["#0f0a2a", 10, 30]} />
-                
-                {/* Camera Controls - Allow for both mobile and desktop */}
-                <OrbitControls 
-                  enableZoom={true}
-                  enablePan={false}
-                  enableRotate={isMobile ? false : true} // Disable rotation on mobile for better input handling
-                  minPolarAngle={isMobile ? 0 : Math.PI / 6} // More top-down for mobile
-                  maxPolarAngle={isMobile ? Math.PI / 6 : Math.PI / 2.5} // Restrict angle on mobile
-                  target={targetPosition}
-                  minDistance={isMobile ? 10 : 5}
-                  maxDistance={20}
-                  // No custom rotation - we'll handle rotation in the board component
-                  // Configure touch controls differently for mobile
-                  mouseButtons={{
-                    LEFT: isMobile ? undefined : THREE.MOUSE.ROTATE,
-                    MIDDLE: THREE.MOUSE.DOLLY,
-                    RIGHT: undefined
+    <AuthProvider>
+      <div className="game-container">
+        {showCanvas && (
+          <KeyboardControls map={controls}>
+            {gameState === 'menu' && <MainMenu />}
+            
+            {(gameState === 'playing' || gameState === 'ai_turn' || gameState === 'game_over') && (
+              <>
+                <Canvas
+                  shadows
+                  camera={{
+                    position: cameraPosition,
+                    fov: cameraFov,
+                    near: 0.1,
+                    far: 1000
                   }}
-                  touches={{
-                    ONE: isMobile ? undefined : THREE.TOUCH.ROTATE,
-                    TWO: THREE.TOUCH.DOLLY_PAN
+                  gl={{
+                    antialias: true,
+                    powerPreference: "default"
                   }}
-                />
+                >
+                  <color attach="background" args={["#0f0a2a"]} />
+                  <fog attach="fog" args={["#0f0a2a", 10, 30]} />
+                  
+                  {/* Camera Controls - Allow for both mobile and desktop */}
+                  <OrbitControls 
+                    enableZoom={true}
+                    enablePan={false}
+                    enableRotate={isMobile ? false : true} // Disable rotation on mobile for better input handling
+                    minPolarAngle={isMobile ? 0 : Math.PI / 6} // More top-down for mobile
+                    maxPolarAngle={isMobile ? Math.PI / 6 : Math.PI / 2.5} // Restrict angle on mobile
+                    target={targetPosition}
+                    minDistance={isMobile ? 10 : 5}
+                    maxDistance={20}
+                    // No custom rotation - we'll handle rotation in the board component
+                    // Configure touch controls differently for mobile
+                    mouseButtons={{
+                      LEFT: isMobile ? undefined : THREE.MOUSE.ROTATE,
+                      MIDDLE: THREE.MOUSE.DOLLY,
+                      RIGHT: undefined
+                    }}
+                    touches={{
+                      ONE: isMobile ? undefined : THREE.TOUCH.ROTATE,
+                      TWO: THREE.TOUCH.DOLLY_PAN
+                    }}
+                  />
+                  
+                  {/* Lighting */}
+                  <Lighting />
+                  
+                  {/* Game Board */}
+                  <Suspense fallback={null}>
+                    <GridFloor />
+                    <Board />
+                  </Suspense>
+                </Canvas>
                 
-                {/* Lighting */}
-                <Lighting />
-                
-                {/* Game Board */}
-                <Suspense fallback={null}>
-                  <GridFloor />
-                  <Board />
-                </Suspense>
-              </Canvas>
-              
-              <GameControls />
-              {gameState === 'game_over' && <GameOver />}
-            </>
-          )}
-          
-          {/* Always show debug controls, regardless of game state */}
-          <DebugControls />
-          
-          {settingsOpen && <SettingsMenu />}
-        </KeyboardControls>
-      )}
-    </div>
+                <GameControls />
+                {gameState === 'game_over' && <GameOver />}
+              </>
+            )}
+            
+            {/* Always show debug controls, regardless of game state */}
+            <DebugControls />
+            
+            {settingsOpen && <SettingsMenu />}
+          </KeyboardControls>
+        )}
+      </div>
+    </AuthProvider>
   );
 }
 
