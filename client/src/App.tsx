@@ -5,6 +5,7 @@ import * as THREE from "three";
 import { useAudio } from "./lib/stores/useAudio";
 import { useCheckersStore } from "./lib/stores/useCheckersStore";
 import { AuthProvider } from "./contexts/AuthContext";
+import { AuthHeader } from "./components/auth/AuthHeader";
 import "@fontsource/inter";
 import MainMenu from "./components/ui/MainMenu";
 import Board from "./components/game/Board";
