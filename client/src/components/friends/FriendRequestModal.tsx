@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Send, UserPlus } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -7,6 +7,7 @@ import { Textarea } from '../ui/textarea';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '../ui/dialog';
@@ -28,9 +29,15 @@ export function FriendRequestModal({
   recipientDisplayName 
 }: FriendRequestModalProps) {
   const { user } = useAuth();
-  const [searchQuery, setSearchQuery] = useState(recipientDisplayName || '');
+  const [searchQuery, setSearchQuery] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Update searchQuery when recipientDisplayName changes
+  useEffect(() => {
+    setSearchQuery(recipientDisplayName || '');
+    console.log('Modal props updated:', { recipientUid, recipientDisplayName, isOpen });
+  }, [recipientDisplayName, recipientUid, isOpen]);
 
   const handleSendRequest = async () => {
     console.log('Sending friend request:', { user: user?.uid, recipientUid, searchQuery });
@@ -70,6 +77,9 @@ export function FriendRequestModal({
             <UserPlus className="h-5 w-5" />
             Send Friend Request
           </DialogTitle>
+          <DialogDescription className="text-slate-400">
+            Send a friend request to connect with another player.
+          </DialogDescription>
         </DialogHeader>
         
         <div className="space-y-4">
@@ -116,7 +126,7 @@ export function FriendRequestModal({
             </Button>
             <Button
               onClick={handleSendRequest}
-              disabled={loading || !searchQuery.trim() || !recipientUid}
+              disabled={loading || !recipientUid}
               className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
             >
               <Send className="h-4 w-4 mr-2" />
