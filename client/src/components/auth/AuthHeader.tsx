@@ -14,12 +14,12 @@ export function AuthHeader() {
     return (
       <>
         <div className="fixed top-4 right-4 z-50">
-          <button 
+          <div 
             onClick={() => setShowProfileModal(true)}
-            className="bg-gray-900/80 backdrop-blur-md border border-purple-500/30 rounded-lg p-2 hover:bg-gray-800/80 transition-colors"
+            className="bg-gray-900/80 backdrop-blur-md border border-purple-500/30 rounded-lg p-2 hover:bg-gray-800/80 transition-colors cursor-pointer"
           >
             <UserProfile compact />
-          </button>
+          </div>
         </div>
         
         <AuthModal 

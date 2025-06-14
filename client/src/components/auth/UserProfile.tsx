@@ -24,36 +24,37 @@ export function UserProfile({ compact = false }: UserProfileProps) {
     }
   };
 
-  if (!user || !userProfile) {
+  if (!user) {
     return null;
   }
 
+  // Use Firebase user data as fallback when Firestore profile is unavailable
+  const displayName = userProfile?.displayName || user.displayName || user.email?.split('@')[0] || 'Anonymous';
+  const eloRating = userProfile?.eloRating || 1200;
+  const totalGames = userProfile?.totalGames || 0;
+  const wins = userProfile?.wins || 0;
+  const losses = userProfile?.losses || 0;
+  const isOnline = userProfile?.isOnline || true;
+  const createdAt = userProfile?.createdAt || new Date();
+  const lastOnline = userProfile?.lastOnline || new Date();
+
   if (compact) {
     return (
-      <div className="flex items-center space-x-3 bg-gray-900/80 backdrop-blur-md border border-purple-500/30 rounded-lg p-3">
+      <div className="flex items-center space-x-3">
         <Avatar className="h-8 w-8">
-          <AvatarImage src={user.photoURL || undefined} alt={userProfile.displayName} />
+          <AvatarImage src={user.photoURL || undefined} alt={displayName} />
           <AvatarFallback className="bg-purple-600 text-white text-xs">
-            {userProfile.displayName.charAt(0).toUpperCase()}
+            {displayName.charAt(0).toUpperCase()}
           </AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium text-white truncate">
-            {userProfile.displayName}
+            {displayName}
           </p>
           <p className="text-xs text-gray-400">
-            ELO: {userProfile.eloRating}
+            ELO: {eloRating}
           </p>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleSignOut}
-          disabled={signingOut}
-          className="h-8 w-8 p-0 text-gray-400 hover:text-white hover:bg-red-600/20"
-        >
-          <LogOut className="h-4 w-4" />
-        </Button>
       </div>
     );
   }
@@ -63,18 +64,18 @@ export function UserProfile({ compact = false }: UserProfileProps) {
       <CardHeader className="text-center pb-4">
         <div className="flex flex-col items-center space-y-3">
           <Avatar className="h-20 w-20">
-            <AvatarImage src={user.photoURL || undefined} alt={userProfile.displayName} />
+            <AvatarImage src={user.photoURL || undefined} alt={displayName} />
             <AvatarFallback className="bg-gradient-to-r from-purple-600 to-cyan-600 text-white text-xl">
-              {userProfile.displayName.charAt(0).toUpperCase()}
+              {displayName.charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
           <div>
             <CardTitle className="text-xl font-bold text-white">
-              {userProfile.displayName}
+              {displayName}
             </CardTitle>
             <p className="text-sm text-gray-400">{user.email}</p>
           </div>
-          {userProfile.isOnline && (
+          {isOnline && (
             <Badge className="bg-green-600 hover:bg-green-700 text-white">
               Online
             </Badge>
@@ -90,7 +91,7 @@ export function UserProfile({ compact = false }: UserProfileProps) {
               <Trophy className="h-4 w-4" />
               <span className="text-xs font-medium">ELO Rating</span>
             </div>
-            <p className="text-lg font-bold text-white">{userProfile.eloRating}</p>
+            <p className="text-lg font-bold text-white">{eloRating}</p>
           </div>
           
           <div className="bg-gray-800/50 rounded-lg p-3 text-center">
@@ -98,12 +99,12 @@ export function UserProfile({ compact = false }: UserProfileProps) {
               <Target className="h-4 w-4" />
               <span className="text-xs font-medium">Games</span>
             </div>
-            <p className="text-lg font-bold text-white">{userProfile.totalGames}</p>
+            <p className="text-lg font-bold text-white">{totalGames}</p>
           </div>
         </div>
 
         {/* Win/Loss Record */}
-        {userProfile.totalGames > 0 && (
+        {totalGames > 0 && (
           <div className="bg-gray-800/50 rounded-lg p-3">
             <div className="flex items-center justify-center space-x-1 text-gray-300 mb-2">
               <Users className="h-4 w-4" />
@@ -111,15 +112,15 @@ export function UserProfile({ compact = false }: UserProfileProps) {
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-green-400">
-                Wins: {userProfile.wins}
+                Wins: {wins}
               </span>
               <span className="text-red-400">
-                Losses: {userProfile.losses}
+                Losses: {losses}
               </span>
             </div>
             <div className="mt-1 text-xs text-gray-400 text-center">
-              Win Rate: {userProfile.totalGames > 0 
-                ? Math.round((userProfile.wins / userProfile.totalGames) * 100) 
+              Win Rate: {totalGames > 0 
+                ? Math.round((wins / totalGames) * 100) 
                 : 0}%
             </div>
           </div>
@@ -127,8 +128,8 @@ export function UserProfile({ compact = false }: UserProfileProps) {
 
         {/* Account Info */}
         <div className="text-xs text-gray-400 text-center space-y-1">
-          <p>Member since {new Date(userProfile.createdAt).toLocaleDateString()}</p>
-          <p>Last online {new Date(userProfile.lastOnline).toLocaleString()}</p>
+          <p>Member since {new Date(createdAt).toLocaleDateString()}</p>
+          <p>Last online {new Date(lastOnline).toLocaleString()}</p>
         </div>
 
         {/* Sign Out Button */}
