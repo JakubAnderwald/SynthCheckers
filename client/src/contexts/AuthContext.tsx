@@ -83,10 +83,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [user]);
 
-  const signInWithGoogle = async () => {
+  const signInWithGoogle = async (rememberMe: boolean = false) => {
     try {
       setLoading(true);
-      await authService.signInWithGoogle();
+      await authService.signInWithGoogle(rememberMe);
       // Auth state change will be handled by the listener
     } catch (error) {
       console.error('Error signing in with Google:', error);
@@ -128,6 +128,26 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
+  const restoreSession = async () => {
+    try {
+      setLoading(true);
+      const restoredUser = await authService.restoreSession();
+      // Auth state will be updated by the listener
+    } catch (error) {
+      console.error('Error restoring session:', error);
+      setLoading(false);
+    }
+  };
+
+  const handleReconnection = async (): Promise<boolean> => {
+    try {
+      return await authService.handleReconnection();
+    } catch (error) {
+      console.error('Error handling reconnection:', error);
+      return false;
+    }
+  };
+
   const contextValue: AuthContextType = {
     user,
     userProfile,
@@ -135,6 +155,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     signInWithGoogle,
     signOut,
     updateDisplayName,
+    restoreSession,
+    handleReconnection,
     isAuthenticated: !!user,
   };
 
