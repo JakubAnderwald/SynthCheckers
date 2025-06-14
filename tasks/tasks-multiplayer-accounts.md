@@ -88,7 +88,7 @@ Based on `prd-multiplayer-accounts.md` and `tdd-multiplayer-accounts.md`
   - [x] 3.9 Write unit tests for profile components and ELO calculations
 
 - [ ] 4.0 Friend System Implementation
-  - [ ] 4.1 Create Firestore subcollection structure for friendships
+  - [x] 4.1 Create Firestore subcollection structure for friendships
   - [ ] 4.2 Implement friend request sending functionality
   - [ ] 4.3 Build friend request management interface (accept/decline)
   - [ ] 4.4 Create friends list component with real-time online status
