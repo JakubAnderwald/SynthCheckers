@@ -46,14 +46,14 @@ Based on `prd-multiplayer-accounts.md` and `tdd-multiplayer-accounts.md`
 
 ## Tasks
 
-- [ ] 1.0 Firebase Project Setup and Configuration
+- [x] 1.0 Firebase Project Setup and Configuration
   - [x] 1.1 Install Firebase SDK and dependencies (firebase, @firebase/auth, @firebase/firestore)
   - [x] 1.2 Create Firebase project configuration file with environment variables
   - [x] 1.3 Initialize Firebase app instance in client application
   - [x] 1.4 Configure Firebase Hosting for deployment
   - [x] 1.5 Set up Firebase Emulator Suite for local development and testing
-  - [ ] 1.6 Create Firestore database in production mode (Manual: Firebase Console)
-  - [ ] 1.7 Enable Google OAuth provider in Firebase Authentication console (Manual: Firebase Console)
+  - [x] 1.6 Create Firestore database in production mode (Manual: Firebase Console)
+  - [x] 1.7 Enable Google OAuth provider in Firebase Authentication console (Manual: Firebase Console)
   - [x] 1.8 Create Firebase authentication service foundation
   - [x] 1.9 Configure secure Firebase secrets integration via API endpoint
 
