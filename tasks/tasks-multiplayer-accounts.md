@@ -77,8 +77,8 @@ Based on `prd-multiplayer-accounts.md` and `tdd-multiplayer-accounts.md`
   - [x] 2.9 Write unit tests for authentication service and components
 
 - [ ] 3.0 User Profile and Statistics System
-  - [ ] 3.1 Create Firestore document structure for user profiles with ELO ratings
-  - [ ] 3.2 Implement user profile display component with stats (wins, losses, games played)
+  - [x] 3.1 Create Firestore document structure for user profiles with ELO ratings
+  - [x] 3.2 Implement user profile display component with stats (wins, losses, games played)
   - [ ] 3.3 Build profile editing interface for display name updates
   - [ ] 3.4 Create game history component with pagination support
   - [ ] 3.5 Implement ELO rating calculation system with proper K-factors
