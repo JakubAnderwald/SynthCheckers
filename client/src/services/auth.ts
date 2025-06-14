@@ -88,16 +88,26 @@ class AuthService {
    */
   async signInWithGoogle(rememberMe: boolean = false): Promise<User> {
     try {
+      console.log('Starting Google sign-in process...');
       const firebaseAuth = await getFirebaseAuth();
       
       // Set persistence preference before signing in
+      console.log('Setting persistence preference...');
       await this.setPersistencePreference(rememberMe);
       
+      console.log('Opening Google sign-in popup...');
       const result = await signInWithPopup(firebaseAuth, this.googleProvider);
       const user = result.user;
       
-      // Check if user document exists in Firestore
-      await this.ensureUserDocument(user);
+      console.log('Sign-in successful, ensuring user document exists...');
+      // Check if user document exists in Firestore with timeout
+      const ensureDocPromise = this.ensureUserDocument(user);
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('User document creation timeout')), 10000);
+      });
+      
+      await Promise.race([ensureDocPromise, timeoutPromise]);
+      console.log('User document setup complete');
       
       return user;
     } catch (error) {
@@ -150,11 +160,20 @@ class AuthService {
    */
   private async ensureUserDocument(user: User): Promise<void> {
     try {
+      console.log('Checking if user document exists for:', user.uid);
       const firebaseDb = await getFirebaseDb();
       const userDocRef = doc(firebaseDb, 'users', user.uid);
-      const userDoc = await getDoc(userDocRef);
+      
+      // Add timeout for the getDoc operation
+      const getDocPromise = getDoc(userDocRef);
+      const getDocTimeout = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('GetDoc timeout')), 5000);
+      });
+      
+      const userDoc = await Promise.race([getDocPromise, getDocTimeout]);
 
       if (!userDoc.exists()) {
+        console.log('Creating new user document...');
         // Create new user document with complete profile structure
         const newUserProfile = {
           uid: user.uid,
@@ -198,21 +217,31 @@ class AuthService {
           }
         };
 
-        await setDoc(userDocRef, {
+        // Add timeout for the setDoc operation
+        const setDocPromise = setDoc(userDocRef, {
           ...newUserProfile,
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
           lastOnline: serverTimestamp(),
         });
+        const setDocTimeout = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('SetDoc timeout')), 5000);
+        });
         
+        await Promise.race([setDocPromise, setDocTimeout]);
         console.log('Created new user document for:', user.uid);
       } else {
-        // Update existing user's last online time
-        await updateDoc(userDocRef, {
+        console.log('Updating existing user document...');
+        // Update existing user's last online time with timeout
+        const updateDocPromise = updateDoc(userDocRef, {
           lastOnline: serverTimestamp(),
           isOnline: true,
         });
+        const updateDocTimeout = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('UpdateDoc timeout')), 5000);
+        });
         
+        await Promise.race([updateDocPromise, updateDocTimeout]);
         console.log('Updated existing user document for:', user.uid);
       }
     } catch (error) {

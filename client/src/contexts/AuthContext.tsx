@@ -116,7 +116,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const signInWithGoogle = async (rememberMe: boolean = false) => {
     try {
       setLoading(true);
-      await authService.signInWithGoogle(rememberMe);
+      
+      // Add timeout protection to prevent hanging
+      const signInPromise = authService.signInWithGoogle(rememberMe);
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Sign-in timeout')), 30000); // 30 second timeout
+      });
+      
+      await Promise.race([signInPromise, timeoutPromise]);
       // Auth state change will be handled by the listener
     } catch (error) {
       console.error('Error signing in with Google:', error);
