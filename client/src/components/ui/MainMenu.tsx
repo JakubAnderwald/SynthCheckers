@@ -23,7 +23,7 @@ const MainMenu: React.FC = () => {
   };
   
   if (showFriends) {
-    return <FriendsPage />;
+    return <FriendsPage onBack={() => setShowFriends(false)} />;
   }
 
   return (

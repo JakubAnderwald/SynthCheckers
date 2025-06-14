@@ -24,13 +24,20 @@ service cloud.firestore {
       allow read, write: if request.auth != null && 
                             (request.auth.uid == resource.data.fromUid || 
                              request.auth.uid == resource.data.toUid);
+      // Allow creating new friend requests
+      allow create: if request.auth != null && 
+                       request.auth.uid == request.resource.data.fromUid;
     }
     
-    // Friendships - users can read friendships they're part of
+    // Friendships - users can read and write friendships they're part of
     match /friendships/{friendshipId} {
-      allow read: if request.auth != null && 
-                     (request.auth.uid == resource.data.user1Uid || 
-                      request.auth.uid == resource.data.user2Uid);
+      allow read, write: if request.auth != null && 
+                            (request.auth.uid == resource.data.user1Uid || 
+                             request.auth.uid == resource.data.user2Uid);
+      // Allow creating new friendships when accepting requests
+      allow create: if request.auth != null && 
+                       (request.auth.uid == request.resource.data.user1Uid || 
+                        request.auth.uid == request.resource.data.user2Uid);
     }
     
     // Game challenges - users can manage challenges they send or receive

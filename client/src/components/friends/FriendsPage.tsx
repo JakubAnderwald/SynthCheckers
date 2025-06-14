@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Users, UserPlus, Search, Bell } from 'lucide-react';
+import { Users, UserPlus, Search, Bell, ArrowLeft } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { Badge } from '../ui/badge';
@@ -10,9 +10,10 @@ import { FriendRequestModal } from './FriendRequestModal';
 
 interface FriendsPageProps {
   onChallengeToGame?: (friendUid: string) => void;
+  onBack?: () => void;
 }
 
-export function FriendsPage({ onChallengeToGame }: FriendsPageProps) {
+export function FriendsPage({ onChallengeToGame, onBack }: FriendsPageProps) {
   const [showRequestModal, setShowRequestModal] = useState(false);
 
   return (
@@ -21,6 +22,17 @@ export function FriendsPage({ onChallengeToGame }: FriendsPageProps) {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
+            {onBack && (
+              <Button
+                onClick={onBack}
+                variant="outline"
+                size="sm"
+                className="border-purple-500/30 text-cyan-300 hover:bg-purple-500/20"
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back
+              </Button>
+            )}
             <div className="p-3 bg-gradient-to-br from-purple-600 to-pink-600 rounded-lg">
               <Users className="h-6 w-6 text-white" />
             </div>
