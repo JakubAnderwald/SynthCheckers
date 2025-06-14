@@ -68,8 +68,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
               setStoreError(null);
               updateLastActivity();
               
-              // Set user as online
-              await authService.setUserOnlineStatus(true);
+              // Set user as online (only if profile exists)
+              if (profile) {
+                await authService.setUserOnlineStatus(true);
+              }
             } catch (error) {
               console.error('Error getting user profile:', error);
               setStoreError('Failed to load user profile');

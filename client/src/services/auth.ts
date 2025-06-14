@@ -287,6 +287,16 @@ class AuthService {
     try {
       const firebaseDb = await getFirebaseDb();
       const userDocRef = doc(firebaseDb, 'users', firebaseAuth.currentUser.uid);
+      
+      // Check if document exists first
+      const userDoc = await getDoc(userDocRef);
+      if (!userDoc.exists()) {
+        // If document doesn't exist, ensure it's created first
+        await this.ensureUserDocument(firebaseAuth.currentUser);
+        return; // The ensureUserDocument already sets isOnline: true
+      }
+      
+      // Update existing document
       await updateDoc(userDocRef, {
         isOnline,
         lastOnline: serverTimestamp(),
