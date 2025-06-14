@@ -1,14 +1,16 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useCheckersStore } from '@/lib/stores/useCheckersStore';
 import { useAudio } from '@/lib/stores/useAudio';
 import { colors } from '@/lib/theme/colors';
 import { useIsMobile } from '@/hooks/use-is-mobile';
+import { FriendsPage } from '@/components/friends/FriendsPage';
 
 const MainMenu: React.FC = () => {
   const initGame = useCheckersStore(state => state.initGame);
   const toggleSettings = useCheckersStore(state => state.toggleSettings);
   const { toggleMute, isMuted } = useAudio();
   const isMobile = useIsMobile();
+  const [showFriends, setShowFriends] = useState(false);
   
   // Background grid effect for the menu
   const gridStyle = {
@@ -20,6 +22,10 @@ const MainMenu: React.FC = () => {
     backgroundPosition: 'center center',
   };
   
+  if (showFriends) {
+    return <FriendsPage />;
+  }
+
   return (
     <div 
       className="fixed inset-0 flex flex-col items-center justify-center z-10 overflow-auto"
@@ -69,6 +75,16 @@ const MainMenu: React.FC = () => {
             }}
           >
             Two Players
+          </button>
+          
+          <button
+            onClick={() => setShowFriends(true)}
+            className="w-full py-2 sm:py-3 px-4 sm:px-6 text-base sm:text-lg font-medium rounded-md bg-neon-cyan hover:bg-opacity-80 text-white transition-all duration-200 transform hover:scale-105"
+            style={{ 
+              boxShadow: `0 0 10px ${colors.neon.cyan}, 0 0 5px ${colors.neon.cyan}`,
+            }}
+          >
+            Friends
           </button>
           
           <button

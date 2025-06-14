@@ -6,6 +6,7 @@ import { useAudio } from "./lib/stores/useAudio";
 import { useCheckersStore } from "./lib/stores/useCheckersStore";
 import { AuthProvider } from "./contexts/AuthContext";
 import { AuthHeader } from "./components/auth/AuthHeader";
+import { Toaster } from "sonner";
 import "@fontsource/inter";
 import MainMenu from "./components/ui/MainMenu";
 import Board from "./components/game/Board";
@@ -122,6 +123,17 @@ function App() {
 
   return (
     <AuthProvider>
+      <Toaster 
+        position="top-right" 
+        theme="dark"
+        toastOptions={{
+          style: {
+            background: 'rgb(30 41 59)',
+            border: '1px solid rgb(168 85 247 / 0.3)',
+            color: 'rgb(165 243 252)',
+          },
+        }}
+      />
       <div className="game-container">
         <AuthHeader />
         {showCanvas && (
