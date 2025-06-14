@@ -235,71 +235,78 @@ class FriendService {
   }> {
     const firebaseDb = await getFirebaseDb();
     
-    // Get incoming requests
-    const incomingQuery = query(
-      collection(firebaseDb, 'friendRequests'),
-      where('toUid', '==', userUid),
-      where('status', '==', 'pending'),
-      orderBy('createdAt', 'desc')
-    );
+    try {
+      // Simplified queries without orderBy to avoid composite index requirement
+      const incomingQuery = query(
+        collection(firebaseDb, 'friendRequests'),
+        where('toUid', '==', userUid),
+        where('status', '==', 'pending')
+      );
 
-    // Get outgoing requests
-    const outgoingQuery = query(
-      collection(firebaseDb, 'friendRequests'),
-      where('fromUid', '==', userUid),
-      where('status', '==', 'pending'),
-      orderBy('createdAt', 'desc')
-    );
+      const outgoingQuery = query(
+        collection(firebaseDb, 'friendRequests'),
+        where('fromUid', '==', userUid),
+        where('status', '==', 'pending')
+      );
 
-    const [incomingSnapshot, outgoingSnapshot] = await Promise.all([
-      getDocs(incomingQuery),
-      getDocs(outgoingQuery)
-    ]);
+      const [incomingSnapshot, outgoingSnapshot] = await Promise.all([
+        getDocs(incomingQuery),
+        getDocs(outgoingQuery)
+      ]);
 
-    const incoming: PendingFriendRequest[] = [];
-    const outgoing: PendingFriendRequest[] = [];
+      const incoming: PendingFriendRequest[] = [];
+      const outgoing: PendingFriendRequest[] = [];
 
-    // Process incoming requests
-    for (const requestDoc of incomingSnapshot.docs) {
-      const requestData = requestDoc.data();
-      const fromUserDoc = await getDoc(doc(firebaseDb, 'users', requestData.fromUid));
-      
-      if (fromUserDoc.exists()) {
-        const fromUserData = fromUserDoc.data();
-        incoming.push({
-          requestId: requestDoc.id,
-          fromUid: requestData.fromUid,
-          fromDisplayName: fromUserData.displayName,
-          fromPhotoURL: fromUserData.photoURL,
-          toUid: requestData.toUid,
-          message: requestData.message,
-          createdAt: requestData.createdAt?.toDate() || new Date(),
-          type: 'incoming',
-        });
+      // Process incoming requests
+      for (const requestDoc of incomingSnapshot.docs) {
+        const requestData = requestDoc.data();
+        const fromUserDoc = await getDoc(doc(firebaseDb, 'users', requestData.fromUid));
+        
+        if (fromUserDoc.exists()) {
+          const fromUserData = fromUserDoc.data();
+          incoming.push({
+            requestId: requestDoc.id,
+            fromUid: requestData.fromUid,
+            fromDisplayName: fromUserData.displayName,
+            fromPhotoURL: fromUserData.photoURL,
+            toUid: requestData.toUid,
+            message: requestData.message,
+            createdAt: requestData.createdAt?.toDate() || new Date(),
+            type: 'incoming',
+          });
+        }
       }
-    }
 
-    // Process outgoing requests
-    for (const requestDoc of outgoingSnapshot.docs) {
-      const requestData = requestDoc.data();
-      const toUserDoc = await getDoc(doc(firebaseDb, 'users', requestData.toUid));
-      
-      if (toUserDoc.exists()) {
-        const toUserData = toUserDoc.data();
-        outgoing.push({
-          requestId: requestDoc.id,
-          fromUid: requestData.fromUid,
-          fromDisplayName: toUserData.displayName,
-          fromPhotoURL: toUserData.photoURL,
-          toUid: requestData.toUid,
-          message: requestData.message,
-          createdAt: requestData.createdAt?.toDate() || new Date(),
-          type: 'outgoing',
-        });
+      // Process outgoing requests
+      for (const requestDoc of outgoingSnapshot.docs) {
+        const requestData = requestDoc.data();
+        const toUserDoc = await getDoc(doc(firebaseDb, 'users', requestData.toUid));
+        
+        if (toUserDoc.exists()) {
+          const toUserData = toUserDoc.data();
+          outgoing.push({
+            requestId: requestDoc.id,
+            fromUid: requestData.fromUid,
+            fromDisplayName: toUserData.displayName,
+            fromPhotoURL: toUserData.photoURL,
+            toUid: requestData.toUid,
+            message: requestData.message,
+            createdAt: requestData.createdAt?.toDate() || new Date(),
+            type: 'outgoing',
+          });
+        }
       }
-    }
 
-    return { incoming, outgoing };
+      // Sort results by creation date (most recent first)
+      incoming.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+      outgoing.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+
+      return { incoming, outgoing };
+    } catch (error) {
+      console.error('Error loading friend requests:', error);
+      // Return empty arrays if there's an error to prevent app crashes
+      return { incoming: [], outgoing: [] };
+    }
   }
 
   /**
