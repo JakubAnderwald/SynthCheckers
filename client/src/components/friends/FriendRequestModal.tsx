@@ -33,20 +33,20 @@ export function FriendRequestModal({
   const [loading, setLoading] = useState(false);
 
   const handleSendRequest = async () => {
+    console.log('Sending friend request:', { user: user?.uid, recipientUid, searchQuery });
+    
     if (!user || !recipientUid) {
+      console.error('Missing user or recipientUid:', { user: user?.uid, recipientUid });
       toast.error('Please select a user to send a friend request to');
-      return;
-    }
-
-    if (!searchQuery.trim()) {
-      toast.error('Please enter a display name');
       return;
     }
 
     setLoading(true);
     try {
+      console.log('Calling friendService.sendFriendRequest...');
       await friendService.sendFriendRequest(user.uid, recipientUid, message.trim() || undefined);
-      toast.success(`Friend request sent to ${searchQuery}!`);
+      console.log('Friend request sent successfully');
+      toast.success(`Friend request sent to ${recipientDisplayName || searchQuery}!`);
       setSearchQuery('');
       setMessage('');
       onClose();

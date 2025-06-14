@@ -48,18 +48,23 @@ class FriendService {
     toUid: string, 
     message?: string
   ): Promise<string> {
+    console.log('FriendService.sendFriendRequest called with:', { fromUid, toUid, message });
+    
     if (fromUid === toUid) {
       throw new Error('Cannot send friend request to yourself');
     }
 
+    console.log('Getting Firebase database...');
     const firebaseDb = await getFirebaseDb();
     
+    console.log('Checking for existing relationship...');
     // Check if friendship or pending request already exists
     const existingFriendship = await this.checkExistingRelationship(fromUid, toUid);
     if (existingFriendship) {
       throw new Error('Friendship or pending request already exists');
     }
 
+    console.log('Creating friend request document...');
     // Create friend request document
     const requestData = {
       fromUid,
