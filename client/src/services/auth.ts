@@ -4,7 +4,10 @@ import {
   signOut, 
   onAuthStateChanged,
   User,
-  updateProfile
+  updateProfile,
+  setPersistence,
+  browserLocalPersistence,
+  browserSessionPersistence
 } from 'firebase/auth';
 import { 
   doc, 
@@ -38,6 +41,7 @@ export interface CreateUserProfile {
 
 class AuthService {
   private googleProvider: GoogleAuthProvider;
+  private sessionStorageKey = 'synth_checkers_auth_preference';
 
   constructor() {
     this.googleProvider = new GoogleAuthProvider();
@@ -46,11 +50,48 @@ class AuthService {
   }
 
   /**
+   * Set authentication persistence preference
+   */
+  async setPersistencePreference(rememberMe: boolean): Promise<void> {
+    const firebaseAuth = await getFirebaseAuth();
+    const persistence = rememberMe ? browserLocalPersistence : browserSessionPersistence;
+    
+    try {
+      await setPersistence(firebaseAuth, persistence);
+      // Store user preference for future sessions
+      localStorage.setItem(this.sessionStorageKey, rememberMe.toString());
+    } catch (error) {
+      console.error('Error setting auth persistence:', error);
+      throw new Error('Failed to set authentication persistence');
+    }
+  }
+
+  /**
+   * Get stored persistence preference
+   */
+  getPersistencePreference(): boolean {
+    const stored = localStorage.getItem(this.sessionStorageKey);
+    return stored === 'true'; // Default to false (session only)
+  }
+
+  /**
+   * Initialize authentication with stored persistence preference
+   */
+  async initializeAuthPersistence(): Promise<void> {
+    const rememberMe = this.getPersistencePreference();
+    await this.setPersistencePreference(rememberMe);
+  }
+
+  /**
    * Sign in with Google OAuth
    */
-  async signInWithGoogle(): Promise<User> {
+  async signInWithGoogle(rememberMe: boolean = false): Promise<User> {
     try {
       const firebaseAuth = await getFirebaseAuth();
+      
+      // Set persistence preference before signing in
+      await this.setPersistencePreference(rememberMe);
+      
       const result = await signInWithPopup(firebaseAuth, this.googleProvider);
       const user = result.user;
       
@@ -221,6 +262,65 @@ class AuthService {
   async isAuthenticated(): Promise<boolean> {
     const firebaseAuth = await getFirebaseAuth();
     return !!firebaseAuth.currentUser;
+  }
+
+  /**
+   * Attempt to restore previous session
+   */
+  async restoreSession(): Promise<User | null> {
+    try {
+      // Initialize persistence first
+      await this.initializeAuthPersistence();
+      
+      const firebaseAuth = await getFirebaseAuth();
+      
+      // Return current user if already available
+      if (firebaseAuth.currentUser) {
+        return firebaseAuth.currentUser;
+      }
+
+      // Wait for auth state to be determined
+      return new Promise((resolve) => {
+        const unsubscribe = onAuthStateChanged(firebaseAuth, (user) => {
+          unsubscribe();
+          resolve(user);
+        });
+      });
+    } catch (error) {
+      console.error('Error restoring session:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Handle network reconnection and session validation
+   */
+  async handleReconnection(): Promise<boolean> {
+    try {
+      const firebaseAuth = await getFirebaseAuth();
+      
+      if (!firebaseAuth.currentUser) {
+        return false;
+      }
+
+      // Validate token by attempting to refresh it
+      await firebaseAuth.currentUser.getIdToken(true);
+      
+      // Update user online status
+      await this.setUserOnlineStatus(true);
+      
+      return true;
+    } catch (error) {
+      console.error('Error during reconnection:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Clear stored session data
+   */
+  clearSessionData(): void {
+    localStorage.removeItem(this.sessionStorageKey);
   }
 }
 

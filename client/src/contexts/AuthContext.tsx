@@ -9,9 +9,13 @@ interface AuthContextType {
   loading: boolean;
   
   // Auth actions
-  signInWithGoogle: () => Promise<void>;
+  signInWithGoogle: (rememberMe?: boolean) => Promise<void>;
   signOut: () => Promise<void>;
   updateDisplayName: (newDisplayName: string) => Promise<void>;
+  
+  // Session management
+  restoreSession: () => Promise<void>;
+  handleReconnection: () => Promise<boolean>;
   
   // Auth status
   isAuthenticated: boolean;
