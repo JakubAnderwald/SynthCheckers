@@ -84,6 +84,16 @@ The application follows a client-server architecture with a focus on frontend-he
 
 ## Recent Changes
 
+- **June 14, 2025 - Authentication & User Search Fixes**: Resolved critical issues for new user sign-in and friend discovery
+  - Fixed authentication hanging issue for new accounts with timeout protection (30-second overall timeout)
+  - Added detailed logging to track authentication progress and identify bottlenecks
+  - Enhanced Firestore operation robustness with individual 5-second operation timeouts
+  - Created missing userService.ts file for user search functionality
+  - Updated Firestore security rules to allow authenticated users to read other user profiles
+  - Fixed friend request loading with proper error handling and simplified queries
+  - Added back button navigation from friends page to main menu
+  - Resolved compilation errors in friend service with proper try-catch structure
+
 - **June 14, 2025 - Complete Friend System Implementation**: Finished Section 4.0 friend system infrastructure
   - Created comprehensive Firestore subcollection structure for friendships and friend requests
   - Built complete friend request system with sending, accepting, declining functionality

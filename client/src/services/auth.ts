@@ -170,7 +170,7 @@ class AuthService {
         setTimeout(() => reject(new Error('GetDoc timeout')), 5000);
       });
       
-      const userDoc = await Promise.race([getDocPromise, getDocTimeout]);
+      const userDoc = await Promise.race([getDocPromise, getDocTimeout]) as any;
 
       if (!userDoc.exists()) {
         console.log('Creating new user document...');

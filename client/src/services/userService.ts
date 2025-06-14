@@ -3,10 +3,9 @@ import {
   query, 
   where, 
   getDocs, 
-  orderBy, 
   limit,
-  startAt,
-  endAt
+  doc,
+  getDoc
 } from 'firebase/firestore';
 import { getFirebaseDb } from '../lib/firebase';
 
@@ -26,59 +25,49 @@ export interface SearchResult {
  * Search for users by display name
  */
 export async function searchUsers(searchQuery: string): Promise<SearchResult[]> {
-  const firebaseDb = await getFirebaseDb();
-  
-  const normalizedQuery = searchQuery.toLowerCase().trim();
-  
-  // Create query for partial matching using range queries
-  const usersQuery = query(
-    collection(firebaseDb, 'users'),
-    orderBy('displayName'),
-    startAt(normalizedQuery),
-    endAt(normalizedQuery + '\uf8ff'),
-    limit(20)
-  );
+  if (!searchQuery || searchQuery.trim().length < 2) {
+    return [];
+  }
 
   try {
-    const snapshot = await getDocs(usersQuery);
+    const firebaseDb = await getFirebaseDb();
+    const trimmedQuery = searchQuery.trim().toLowerCase();
+    
+    // Create a query to search for users by display name
+    // Note: This is a simple approach. For production, consider using a search service like Algolia
+    const usersQuery = query(
+      collection(firebaseDb, 'users'),
+      where('displayName', '>=', trimmedQuery),
+      where('displayName', '<=', trimmedQuery + '\uf8ff'),
+      limit(20)
+    );
+
+    const querySnapshot = await getDocs(usersQuery);
     const results: SearchResult[] = [];
 
-    snapshot.forEach((doc) => {
-      const data = doc.data();
+    querySnapshot.forEach((doc) => {
+      const userData = doc.data();
       
-      // Additional client-side filtering for better matching
-      const displayNameLower = data.displayName?.toLowerCase() || '';
-      if (displayNameLower.includes(normalizedQuery)) {
+      // Only include users with public profiles
+      if (userData.privacySettings?.profileVisible !== false) {
         results.push({
-          uid: doc.id,
-          displayName: data.displayName || 'Unknown',
-          photoURL: data.photoURL,
-          eloRating: data.eloRating || 1200,
-          totalGames: data.totalGames || 0,
-          wins: data.wins || 0,
-          losses: data.losses || 0,
-          isOnline: data.isOnline || false,
-          lastOnline: data.lastOnline?.toDate() || new Date(),
+          uid: userData.uid,
+          displayName: userData.displayName,
+          photoURL: userData.photoURL,
+          eloRating: userData.eloRating || 1200,
+          totalGames: userData.totalGames || 0,
+          wins: userData.wins || 0,
+          losses: userData.losses || 0,
+          isOnline: userData.isOnline || false,
+          lastOnline: userData.lastOnline?.toDate() || new Date(),
         });
       }
     });
 
-    // Sort by relevance (exact matches first, then partial matches)
-    results.sort((a, b) => {
-      const aExact = a.displayName.toLowerCase() === normalizedQuery;
-      const bExact = b.displayName.toLowerCase() === normalizedQuery;
-      
-      if (aExact && !bExact) return -1;
-      if (!aExact && bExact) return 1;
-      
-      // If both are exact or both are partial, sort by display name
-      return a.displayName.localeCompare(b.displayName);
-    });
-
-    return results;
+    return results.sort((a, b) => a.displayName.localeCompare(b.displayName));
   } catch (error) {
     console.error('Error searching users:', error);
-    throw new Error('Failed to search users');
+    throw error;
   }
 }
 
@@ -86,29 +75,31 @@ export async function searchUsers(searchQuery: string): Promise<SearchResult[]> 
  * Get user profile by UID for public viewing
  */
 export async function getUserProfile(uid: string): Promise<SearchResult | null> {
-  const firebaseDb = await getFirebaseDb();
-  
   try {
-    const userDoc = await getDocs(
-      query(collection(firebaseDb, 'users'), where('uid', '==', uid), limit(1))
-    );
+    const firebaseDb = await getFirebaseDb();
+    const userDoc = await getDoc(doc(firebaseDb, 'users', uid));
     
-    if (userDoc.empty) {
+    if (!userDoc.exists()) {
       return null;
     }
+
+    const userData = userDoc.data();
     
-    const data = userDoc.docs[0].data();
-    
+    // Check if profile is public
+    if (userData.privacySettings?.profileVisible === false) {
+      return null;
+    }
+
     return {
-      uid: userDoc.docs[0].id,
-      displayName: data.displayName || 'Unknown',
-      photoURL: data.photoURL,
-      eloRating: data.eloRating || 1200,
-      totalGames: data.totalGames || 0,
-      wins: data.wins || 0,
-      losses: data.losses || 0,
-      isOnline: data.isOnline || false,
-      lastOnline: data.lastOnline?.toDate() || new Date(),
+      uid: userData.uid,
+      displayName: userData.displayName,
+      photoURL: userData.photoURL,
+      eloRating: userData.eloRating || 1200,
+      totalGames: userData.totalGames || 0,
+      wins: userData.wins || 0,
+      losses: userData.losses || 0,
+      isOnline: userData.isOnline || false,
+      lastOnline: userData.lastOnline?.toDate() || new Date(),
     };
   } catch (error) {
     console.error('Error getting user profile:', error);

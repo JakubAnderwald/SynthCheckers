@@ -8,8 +8,7 @@ service cloud.firestore {
     
     // Users can read other users' public profiles (for user search and public profiles)
     match /users/{userId} {
-      allow read: if request.auth != null && 
-                     resource.data.privacySettings.profileVisible == true;
+      allow read: if request.auth != null;
     }
     
     // Game records - players can read/write games they participate in
