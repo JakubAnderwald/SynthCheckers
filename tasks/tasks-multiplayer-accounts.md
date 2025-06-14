@@ -12,6 +12,8 @@ Based on `prd-multiplayer-accounts.md` and `tdd-multiplayer-accounts.md`
 - `client/src/services/matchmaking.test.ts` - Unit tests for matchmaking service
 - `client/src/services/database.ts` - Firestore document operations and real-time listeners
 - `client/src/services/database.test.ts` - Unit tests for database service
+- `client/src/lib/firebase.ts` - Firebase configuration and initialization
+- `client/src/main.tsx` - Updated to initialize Firebase on app start
 - `client/src/contexts/AuthContext.tsx` - React context for authentication state management
 - `client/src/contexts/AuthContext.test.tsx` - Unit tests for auth context
 - `client/src/components/profile/UserProfile.tsx` - User profile display component
@@ -43,11 +45,11 @@ Based on `prd-multiplayer-accounts.md` and `tdd-multiplayer-accounts.md`
 - [ ] 1.0 Firebase Project Setup and Configuration
   - [x] 1.1 Install Firebase SDK and dependencies (firebase, @firebase/auth, @firebase/firestore)
   - [x] 1.2 Create Firebase project configuration file with environment variables
-  - [ ] 1.3 Initialize Firebase app instance in client application
-  - [ ] 1.4 Configure Firebase Hosting for deployment
-  - [ ] 1.5 Set up Firebase Emulator Suite for local development and testing
-  - [ ] 1.6 Create Firestore database in production mode
-  - [ ] 1.7 Enable Google OAuth provider in Firebase Authentication console
+  - [x] 1.3 Initialize Firebase app instance in client application
+  - [x] 1.4 Configure Firebase Hosting for deployment
+  - [x] 1.5 Set up Firebase Emulator Suite for local development and testing
+  - [ ] 1.6 Create Firestore database in production mode (Manual: Firebase Console)
+  - [ ] 1.7 Enable Google OAuth provider in Firebase Authentication console (Manual: Firebase Console)
 
 - [ ] 2.0 Authentication System Implementation
   - [ ] 2.1 Create Firebase authentication service with Google OAuth integration
