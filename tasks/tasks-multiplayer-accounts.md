@@ -55,6 +55,7 @@ Based on `prd-multiplayer-accounts.md` and `tdd-multiplayer-accounts.md`
   - [ ] 1.6 Create Firestore database in production mode (Manual: Firebase Console)
   - [ ] 1.7 Enable Google OAuth provider in Firebase Authentication console (Manual: Firebase Console)
   - [x] 1.8 Create Firebase authentication service foundation
+  - [x] 1.9 Configure secure Firebase secrets integration via API endpoint
 
 - [ ] 2.0 Authentication System Implementation
   - [ ] 2.1 Create Firebase authentication service with Google OAuth integration

@@ -50,7 +50,8 @@ class AuthService {
    */
   async signInWithGoogle(): Promise<User> {
     try {
-      const result = await signInWithPopup(auth, this.googleProvider);
+      const firebaseAuth = await getFirebaseAuth();
+      const result = await signInWithPopup(firebaseAuth, this.googleProvider);
       const user = result.user;
       
       // Check if user document exists in Firestore
@@ -68,11 +69,12 @@ class AuthService {
    */
   async signOut(): Promise<void> {
     try {
+      const firebaseAuth = await getFirebaseAuth();
       // Update user's online status before signing out
-      if (auth.currentUser) {
+      if (firebaseAuth.currentUser) {
         await this.setUserOnlineStatus(false);
       }
-      await signOut(auth);
+      await signOut(firebaseAuth);
     } catch (error) {
       console.error('Error signing out:', error);
       throw new Error('Failed to sign out');
@@ -82,15 +84,17 @@ class AuthService {
   /**
    * Get current user
    */
-  getCurrentUser(): User | null {
-    return auth.currentUser;
+  async getCurrentUser(): Promise<User | null> {
+    const firebaseAuth = await getFirebaseAuth();
+    return firebaseAuth.currentUser;
   }
 
   /**
    * Listen to authentication state changes
    */
-  onAuthStateChange(callback: (user: User | null) => void): () => void {
-    return onAuthStateChanged(auth, async (user) => {
+  async onAuthStateChange(callback: (user: User | null) => void): Promise<() => void> {
+    const firebaseAuth = await getFirebaseAuth();
+    return onAuthStateChanged(firebaseAuth, async (user) => {
       if (user) {
         // Update online status when user comes online
         await this.setUserOnlineStatus(true);
@@ -103,7 +107,8 @@ class AuthService {
    * Ensure user document exists in Firestore
    */
   private async ensureUserDocument(user: User): Promise<void> {
-    const userDocRef = doc(db, 'users', user.uid);
+    const firebaseDb = await getFirebaseDb();
+    const userDocRef = doc(firebaseDb, 'users', user.uid);
     const userDoc = await getDoc(userDocRef);
 
     if (!userDoc.exists()) {
@@ -141,7 +146,8 @@ class AuthService {
    */
   async getUserProfile(uid: string): Promise<UserProfile | null> {
     try {
-      const userDocRef = doc(db, 'users', uid);
+      const firebaseDb = await getFirebaseDb();
+      const userDocRef = doc(firebaseDb, 'users', uid);
       const userDoc = await getDoc(userDocRef);
 
       if (userDoc.exists()) {
@@ -166,18 +172,20 @@ class AuthService {
    * Update user display name
    */
   async updateDisplayName(newDisplayName: string): Promise<void> {
-    if (!auth.currentUser) {
+    const firebaseAuth = await getFirebaseAuth();
+    if (!firebaseAuth.currentUser) {
       throw new Error('No authenticated user');
     }
 
     try {
       // Update Firebase Auth profile
-      await updateProfile(auth.currentUser, {
+      await updateProfile(firebaseAuth.currentUser, {
         displayName: newDisplayName,
       });
 
       // Update Firestore document
-      const userDocRef = doc(db, 'users', auth.currentUser.uid);
+      const firebaseDb = await getFirebaseDb();
+      const userDocRef = doc(firebaseDb, 'users', firebaseAuth.currentUser.uid);
       await updateDoc(userDocRef, {
         displayName: newDisplayName,
         updatedAt: serverTimestamp(),
@@ -192,10 +200,12 @@ class AuthService {
    * Set user online/offline status
    */
   async setUserOnlineStatus(isOnline: boolean): Promise<void> {
-    if (!auth.currentUser) return;
+    const firebaseAuth = await getFirebaseAuth();
+    if (!firebaseAuth.currentUser) return;
 
     try {
-      const userDocRef = doc(db, 'users', auth.currentUser.uid);
+      const firebaseDb = await getFirebaseDb();
+      const userDocRef = doc(firebaseDb, 'users', firebaseAuth.currentUser.uid);
       await updateDoc(userDocRef, {
         isOnline,
         lastOnline: serverTimestamp(),
@@ -208,8 +218,9 @@ class AuthService {
   /**
    * Check if user is authenticated
    */
-  isAuthenticated(): boolean {
-    return !!auth.currentUser;
+  async isAuthenticated(): Promise<boolean> {
+    const firebaseAuth = await getFirebaseAuth();
+    return !!firebaseAuth.currentUser;
   }
 }
 
