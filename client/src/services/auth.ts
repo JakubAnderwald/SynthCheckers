@@ -155,7 +155,7 @@ class AuthService {
 
     if (!userDoc.exists()) {
       // Create new user document
-      const userProfile: Omit<UserProfile, 'uid'> = {
+      const userProfile = {
         email: user.email || '',
         displayName: user.displayName || user.email?.split('@')[0] || 'Player',
         eloRating: 1200, // Starting ELO rating
