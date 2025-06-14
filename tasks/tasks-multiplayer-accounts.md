@@ -16,7 +16,11 @@ Based on `prd-multiplayer-accounts.md` and `tdd-multiplayer-accounts.md`
 - `client/src/main.tsx` - Updated to initialize Firebase on app start
 - `client/src/services/auth.ts` - Firebase authentication service with Google OAuth and user management
 - `client/src/contexts/AuthContext.tsx` - React context for authentication state management
-- `client/src/App.tsx` - Updated to include AuthProvider wrapper
+- `client/src/App.tsx` - Updated to include AuthProvider wrapper and AuthHeader
+- `client/src/components/auth/LoginButton.tsx` - Google OAuth login component with remember me option
+- `client/src/components/auth/UserProfile.tsx` - User profile display with stats and logout functionality
+- `client/src/components/auth/AuthModal.tsx` - Modal wrapper for authentication components
+- `client/src/components/auth/AuthHeader.tsx` - Header component integrating authentication UI
 - `.env.example` - Environment variables template for Firebase configuration
 - `.env.development` - Development environment settings for Firebase emulators
 - `firebase.json` - Firebase hosting and emulator configuration
@@ -63,7 +67,7 @@ Based on `prd-multiplayer-accounts.md` and `tdd-multiplayer-accounts.md`
   - [x] 2.1 Create Firebase authentication service with Google OAuth integration
   - [x] 2.2 Implement user session management and persistence
   - [x] 2.3 Create authentication context provider for React state management
-  - [ ] 2.4 Build login/logout UI components with Google sign-in button
+  - [x] 2.4 Build login/logout UI components with Google sign-in button
   - [ ] 2.5 Implement protected route wrapper for authenticated pages
   - [ ] 2.6 Handle first-time user registration and display name setup
   - [ ] 2.7 Create user document in Firestore on initial authentication

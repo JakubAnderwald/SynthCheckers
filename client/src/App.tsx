@@ -123,6 +123,7 @@ function App() {
   return (
     <AuthProvider>
       <div className="game-container">
+        <AuthHeader />
         {showCanvas && (
           <KeyboardControls map={controls}>
             {gameState === 'menu' && <MainMenu />}
