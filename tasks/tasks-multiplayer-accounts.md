@@ -22,6 +22,7 @@ Based on `prd-multiplayer-accounts.md` and `tdd-multiplayer-accounts.md`
 - `client/src/components/auth/AuthModal.tsx` - Modal wrapper for authentication components
 - `client/src/components/auth/AuthHeader.tsx` - Header component integrating authentication UI
 - `client/src/components/auth/ProtectedRoute.tsx` - Protected route wrapper and HOC for authenticated access
+- `client/src/components/auth/DisplayNameSetup.tsx` - First-time user display name setup component
 - `.env.example` - Environment variables template for Firebase configuration
 - `.env.development` - Development environment settings for Firebase emulators
 - `firebase.json` - Firebase hosting and emulator configuration

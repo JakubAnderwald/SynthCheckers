@@ -324,6 +324,50 @@ class AuthService {
   clearSessionData(): void {
     localStorage.removeItem(this.sessionStorageKey);
   }
+
+  /**
+   * Check if user needs display name setup
+   */
+  async needsDisplayNameSetup(user: User): Promise<boolean> {
+    if (!user.displayName || user.displayName.length < 2) {
+      return true;
+    }
+    
+    // Check if display name is just the email prefix (auto-generated)
+    const emailPrefix = user.email?.split('@')[0] || '';
+    return user.displayName === emailPrefix;
+  }
+
+  /**
+   * Complete first-time user setup
+   */
+  async completeFirstTimeSetup(displayName?: string): Promise<void> {
+    const firebaseAuth = await getFirebaseAuth();
+    if (!firebaseAuth.currentUser) {
+      throw new Error('No authenticated user');
+    }
+
+    try {
+      const firebaseDb = await getFirebaseDb();
+      const userDocRef = doc(firebaseDb, 'users', firebaseAuth.currentUser.uid);
+      
+      const updates: any = {
+        isNewUser: false,
+        updatedAt: serverTimestamp(),
+      };
+
+      if (displayName) {
+        // Update both Firebase Auth and Firestore
+        await updateProfile(firebaseAuth.currentUser, { displayName });
+        updates.displayName = displayName;
+      }
+
+      await updateDoc(userDocRef, updates);
+    } catch (error) {
+      console.error('Error completing first-time setup:', error);
+      throw new Error('Failed to complete setup');
+    }
+  }
 }
 
 // Export singleton instance

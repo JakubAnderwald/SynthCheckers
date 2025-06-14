@@ -17,6 +17,10 @@ interface AuthContextType {
   restoreSession: () => Promise<void>;
   handleReconnection: () => Promise<boolean>;
   
+  // First-time setup
+  needsDisplayNameSetup: () => boolean;
+  completeFirstTimeSetup: (displayName?: string) => Promise<void>;
+  
   // Auth status
   isAuthenticated: boolean;
 }
@@ -148,6 +152,29 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
+  const needsDisplayNameSetup = (): boolean => {
+    if (!user || !userProfile) return false;
+    return userProfile.isNewUser === true;
+  };
+
+  const completeFirstTimeSetup = async (displayName?: string): Promise<void> => {
+    try {
+      await authService.completeFirstTimeSetup(displayName);
+      
+      // Update local user profile state
+      if (userProfile) {
+        setUserProfile({
+          ...userProfile,
+          isNewUser: false,
+          displayName: displayName || userProfile.displayName,
+        });
+      }
+    } catch (error) {
+      console.error('Error completing first-time setup:', error);
+      throw error;
+    }
+  };
+
   const contextValue: AuthContextType = {
     user,
     userProfile,
@@ -157,6 +184,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     updateDisplayName,
     restoreSession,
     handleReconnection,
+    needsDisplayNameSetup,
+    completeFirstTimeSetup,
     isAuthenticated: !!user,
   };
 
