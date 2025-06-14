@@ -149,38 +149,76 @@ class AuthService {
    * Ensure user document exists in Firestore
    */
   private async ensureUserDocument(user: User): Promise<void> {
-    const firebaseDb = await getFirebaseDb();
-    const userDocRef = doc(firebaseDb, 'users', user.uid);
-    const userDoc = await getDoc(userDocRef);
+    try {
+      const firebaseDb = await getFirebaseDb();
+      const userDocRef = doc(firebaseDb, 'users', user.uid);
+      const userDoc = await getDoc(userDocRef);
 
-    if (!userDoc.exists()) {
-      // Create new user document
-      const userProfile = {
-        email: user.email || '',
-        displayName: user.displayName || user.email?.split('@')[0] || 'Player',
-        eloRating: 1200, // Starting ELO rating
-        totalGames: 0,
-        wins: 0,
-        losses: 0,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        lastOnline: new Date(),
-        isOnline: true,
-        isNewUser: true, // Flag for first-time setup
-      };
+      if (!userDoc.exists()) {
+        // Create new user document with complete profile structure
+        const newUserProfile = {
+          uid: user.uid,
+          email: user.email || '',
+          displayName: user.displayName || user.email?.split('@')[0] || 'Player',
+          photoURL: user.photoURL || null,
+          
+          // Game Statistics
+          eloRating: 1200,
+          totalGames: 0,
+          wins: 0,
+          losses: 0,
+          draws: 0,
+          
+          // Rating History
+          peakRating: 1200,
+          lowestRating: 1200,
+          ratingHistory: [],
+          
+          // Activity Tracking
+          isOnline: true,
+          isNewUser: true,
+          isVerified: false,
+          accountStatus: 'active',
+          
+          // Preferences
+          gamePreferences: {
+            preferredDifficulty: 'medium',
+            allowChallenges: true,
+            autoAcceptFriends: false,
+            soundEnabled: true,
+            musicEnabled: true,
+            animationsEnabled: true
+          },
+          privacySettings: {
+            profileVisible: true,
+            statsVisible: true,
+            onlineStatusVisible: true,
+            allowDirectMessages: true,
+            allowFriendRequests: true
+          }
+        };
 
-      await setDoc(userDocRef, {
-        ...userProfile,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-        lastOnline: serverTimestamp(),
-      });
-    } else {
-      // Update existing user's last online time
-      await updateDoc(userDocRef, {
-        lastOnline: serverTimestamp(),
-        isOnline: true,
-      });
+        await setDoc(userDocRef, {
+          ...newUserProfile,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+          lastOnline: serverTimestamp(),
+        });
+        
+        console.log('Created new user document for:', user.uid);
+      } else {
+        // Update existing user's last online time
+        await updateDoc(userDocRef, {
+          lastOnline: serverTimestamp(),
+          isOnline: true,
+        });
+        
+        console.log('Updated existing user document for:', user.uid);
+      }
+    } catch (error) {
+      console.error('Error ensuring user document:', error);
+      // Don't throw here to avoid breaking authentication flow
+      // The UI will handle missing profile gracefully
     }
   }
 
