@@ -72,7 +72,7 @@ Based on `prd-multiplayer-accounts.md` and `tdd-multiplayer-accounts.md`
   - [x] 2.4 Build login/logout UI components with Google sign-in button
   - [x] 2.5 Implement protected route wrapper for authenticated pages
   - [x] 2.6 Handle first-time user registration and display name setup
-  - [ ] 2.7 Create user document in Firestore on initial authentication
+  - [x] 2.7 Create user document in Firestore on initial authentication
   - [ ] 2.8 Add authentication state management to Zustand store
   - [ ] 2.9 Write unit tests for authentication service and components
 

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User } from 'firebase/auth';
 import { authService, UserProfile } from '../services/auth';
+import { useAuthStore } from '../lib/stores/useAuthStore';
 
 interface AuthContextType {
   // Auth state
@@ -35,6 +36,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  
+  // Sync with Zustand store
+  const {
+    setUser: setStoreUser,
+    setUserProfile: setStoreUserProfile,
+    setLoading: setStoreLoading,
+    setError: setStoreError,
+    setSessionRestored,
+    updateLastActivity,
+    setRememberMe,
+    clearAuth: clearStoreAuth,
+  } = useAuthStore();
 
   useEffect(() => {
     let unsubscribe: (() => void) | undefined;
@@ -44,20 +57,31 @@ export function AuthProvider({ children }: AuthProviderProps) {
         // Set up auth state listener
         unsubscribe = await authService.onAuthStateChange(async (firebaseUser) => {
           setUser(firebaseUser);
+          setStoreUser(firebaseUser);
           
           if (firebaseUser) {
-            // User signed in - fetch their profile
-            const profile = await authService.getUserProfile(firebaseUser.uid);
-            setUserProfile(profile);
-            
-            // Set user as online
-            await authService.setUserOnlineStatus(true);
+            try {
+              // User signed in - fetch their profile
+              const profile = await authService.getUserProfile(firebaseUser.uid);
+              setUserProfile(profile);
+              setStoreUserProfile(profile);
+              setStoreError(null);
+              updateLastActivity();
+              
+              // Set user as online
+              await authService.setUserOnlineStatus(true);
+            } catch (error) {
+              console.error('Error getting user profile:', error);
+              setStoreError('Failed to load user profile');
+            }
           } else {
             // User signed out
             setUserProfile(null);
+            setStoreUserProfile(null);
           }
           
           setLoading(false);
+          setStoreLoading(false);
         });
       } catch (error) {
         console.error('Error initializing auth:', error);
