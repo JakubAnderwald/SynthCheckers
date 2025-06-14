@@ -41,8 +41,8 @@ Based on `prd-multiplayer-accounts.md` and `tdd-multiplayer-accounts.md`
 ## Tasks
 
 - [ ] 1.0 Firebase Project Setup and Configuration
-  - [ ] 1.1 Install Firebase SDK and dependencies (firebase, @firebase/auth, @firebase/firestore)
-  - [ ] 1.2 Create Firebase project configuration file with environment variables
+  - [x] 1.1 Install Firebase SDK and dependencies (firebase, @firebase/auth, @firebase/firestore)
+  - [x] 1.2 Create Firebase project configuration file with environment variables
   - [ ] 1.3 Initialize Firebase app instance in client application
   - [ ] 1.4 Configure Firebase Hosting for deployment
   - [ ] 1.5 Set up Firebase Emulator Suite for local development and testing
