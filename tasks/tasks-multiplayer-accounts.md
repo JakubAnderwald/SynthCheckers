@@ -12,9 +12,11 @@ Based on `prd-multiplayer-accounts.md` and `tdd-multiplayer-accounts.md`
 - `client/src/services/matchmaking.test.ts` - Unit tests for matchmaking service
 - `client/src/services/database.ts` - Firestore document operations and real-time listeners
 - `client/src/services/database.test.ts` - Unit tests for database service
-- `client/src/lib/firebase.ts` - Firebase configuration and initialization with emulator support
+- `client/src/lib/firebase.ts` - Firebase configuration and initialization (production mode)
 - `client/src/main.tsx` - Updated to initialize Firebase on app start
 - `client/src/services/auth.ts` - Firebase authentication service with Google OAuth and user management
+- `client/src/contexts/AuthContext.tsx` - React context for authentication state management
+- `client/src/App.tsx` - Updated to include AuthProvider wrapper
 - `.env.example` - Environment variables template for Firebase configuration
 - `.env.development` - Development environment settings for Firebase emulators
 - `firebase.json` - Firebase hosting and emulator configuration
@@ -58,7 +60,7 @@ Based on `prd-multiplayer-accounts.md` and `tdd-multiplayer-accounts.md`
   - [x] 1.9 Configure secure Firebase secrets integration via API endpoint
 
 - [ ] 2.0 Authentication System Implementation
-  - [ ] 2.1 Create Firebase authentication service with Google OAuth integration
+  - [x] 2.1 Create Firebase authentication service with Google OAuth integration
   - [ ] 2.2 Implement user session management and persistence
   - [ ] 2.3 Create authentication context provider for React state management
   - [ ] 2.4 Build login/logout UI components with Google sign-in button
