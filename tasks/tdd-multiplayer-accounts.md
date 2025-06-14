@@ -479,66 +479,86 @@ service cloud.firestore {
 
 ## Deployment Considerations
 
-### Environment Variables
-```
-GOOGLE_CLIENT_ID=<oauth_client_id>
-GOOGLE_CLIENT_SECRET=<oauth_secret>
-SESSION_SECRET=<random_session_key>
-DATABASE_URL=<postgresql_connection>
-REDIS_URL=<redis_connection> (future)
-NODE_ENV=production
+### Firebase Configuration
+```typescript
+// Firebase config (stored in environment variables)
+const firebaseConfig = {
+  apiKey: process.env.VITE_FIREBASE_API_KEY,
+  authDomain: process.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.VITE_FIREBASE_APP_ID
+};
 ```
 
-### Database Migrations
-- Use Drizzle migrations for schema updates
-- Seed script for initial ELO ratings and test data
-- Backup strategy for user data and game history
+### Firebase Hosting Setup
+```bash
+# Deploy to Firebase Hosting
+npm run build
+firebase deploy --only hosting
 
-### Monitoring
-- Health checks for WebSocket server responsiveness
-- Database connection monitoring
-- OAuth service availability checks
-- Game completion rate tracking
+# Deploy Firestore rules and indexes
+firebase deploy --only firestore
+```
+
+### Required Firebase Services (Spark Plan)
+- **Authentication**: Google OAuth provider enabled
+- **Firestore Database**: Production mode with security rules
+- **Hosting**: Static site hosting for React build
+- **Analytics**: Basic usage tracking (optional)
+
+### Monitoring (Firebase Console)
+- Authentication success/failure rates
+- Firestore usage metrics (reads/writes/storage)
+- Hosting traffic and performance
+- Real-time active user count
 
 ## Technical Risks & Mitigation Plan
 
 ### High-Risk Areas
 
-**WebSocket Connection Stability**
-- *Risk*: Frequent disconnections disrupting games
-- *Mitigation*: Implement automatic reconnection with game state recovery, heartbeat monitoring
+**Firebase Spark Plan Limitations**
+- *Risk*: Exceeding daily read/write limits disrupting service
+- *Mitigation*: Implement usage monitoring, local caching, efficient query patterns, upgrade path to Blaze plan
+
+**Firestore Real-time Listener Stability**
+- *Risk*: Connection drops causing game desynchronization
+- *Mitigation*: Offline persistence, automatic reconnection, local state validation
+
+**Client-side Security Vulnerabilities**
+- *Risk*: Move validation bypass or data manipulation
+- *Mitigation*: Comprehensive Firestore security rules, transaction-based updates, server-side validation
 
 **ELO Rating Manipulation**
 - *Risk*: Users creating multiple accounts to farm ratings
-- *Mitigation*: Google OAuth prevents easy account creation, monitor for suspicious patterns
+- *Mitigation*: Google OAuth prevents easy account creation, Firebase Auth phone verification (future)
 
-**Database Performance**
-- *Risk*: Slow queries affecting real-time gameplay
-- *Mitigation*: Database indexing, query optimization, connection pooling
+**Firestore Transaction Conflicts**
+- *Risk*: Concurrent moves causing game state corruption
+- *Mitigation*: Atomic transactions, optimistic locking, proper error handling
 
-**Authentication Security**
-- *Risk*: OAuth token compromise or session hijacking
-- *Mitigation*: Secure cookie settings, token rotation, HTTPS enforcement
-
-### Architecture Inconsistencies
-The PRD suggests Firebase authentication, but the current architecture uses Express.js with Passport.js. This TDD maintains consistency with the existing stack while providing equivalent OAuth functionality through Google's OAuth 2.0 implementation.
+### Architecture Changes from Original PRD
+The TDD has been updated to use Firebase services instead of Express.js + PostgreSQL to ensure compatibility with Firebase Spark hosting. This provides equivalent functionality while leveraging Firebase's integrated ecosystem.
 
 ## Out of Scope (Technical Non-Goals)
 
 - Real-time spectator mode for ongoing games
-- Mobile app development (native iOS/Android)
+- Native mobile app development (PWA sufficient)
 - Advanced tournament bracket management
 - Machine learning-based matchmaking optimization
-- Microservices architecture (monolith is sufficient for current scale)
-- Automated cheating detection algorithms
+- Backend server infrastructure (Firebase handles this)
+- Cloud Functions or server-side compute (Spark plan restriction)
 - Video/voice chat integration
 - Custom game variants beyond standard checkers
+- Advanced analytics beyond Firebase Analytics
 
 ## Open Technical Questions
 
-1. **WebSocket Scaling**: Should we implement Redis adapter immediately or wait for scale requirements?
-2. **Game State Persistence**: How frequently should we persist in-memory game state to database?
-3. **ELO Volatility**: Should we implement provisional ratings for new players?
-4. **Connection Recovery**: What's the acceptable timeout for player reconnection before forfeiting?
-5. **Matchmaking Algorithm**: Should we implement time-based relaxation of ELO constraints for faster matching?
-6. **Database Sharding**: At what user count should we consider horizontal database scaling?
+1. **Firestore Usage Optimization**: Should we implement read caching strategies immediately or monitor usage first?
+2. **Game State Persistence**: How frequently should we sync local game state with Firestore during active games?
+3. **ELO Volatility**: Should we implement provisional ratings for new players with < 10 games?
+4. **Connection Recovery**: What's the acceptable timeout for Firestore reconnection before declaring a player forfeit?
+5. **Matchmaking Algorithm**: Should we implement time-based ELO constraint relaxation for faster matching?
+6. **Spark Plan Scaling**: At what usage threshold should we recommend upgrading to Firebase Blaze plan?
+7. **Security Rules Complexity**: How detailed should our Firestore rules be for move validation vs. client-side validation?
