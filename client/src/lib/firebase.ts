@@ -1,6 +1,6 @@
 import { initializeApp, type FirebaseApp } from 'firebase/app';
-import { getAuth, connectAuthEmulator, type Auth } from 'firebase/auth';
-import { getFirestore, connectFirestoreEmulator, type Firestore } from 'firebase/firestore';
+import { getAuth, type Auth } from 'firebase/auth';
+import { getFirestore, type Firestore } from 'firebase/firestore';
 
 interface FirebaseConfig {
   apiKey: string;
@@ -36,17 +36,7 @@ async function initializeFirebase(): Promise<void> {
     auth = getAuth(app);
     db = getFirestore(app);
     
-    // Connect to emulators in development
-    if (import.meta.env.VITE_USE_FIREBASE_EMULATOR === 'true') {
-      try {
-        connectAuthEmulator(auth, 'http://localhost:9099', { disableWarnings: true });
-        connectFirestoreEmulator(db, 'localhost', 8080);
-        console.log('Connected to Firebase emulators');
-      } catch (error) {
-        // Emulators already connected
-        console.log('Firebase emulators already connected');
-      }
-    }
+    // Using production Firebase for all development
     
     console.log('Firebase initialized successfully');
   } catch (error) {
