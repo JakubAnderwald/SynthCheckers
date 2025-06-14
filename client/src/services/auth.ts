@@ -13,7 +13,7 @@ import {
   updateDoc, 
   serverTimestamp 
 } from 'firebase/firestore';
-import { auth, db } from '../lib/firebase';
+import { getFirebaseAuth, getFirebaseDb } from '../lib/firebase';
 
 // Types for user data
 export interface UserProfile {
