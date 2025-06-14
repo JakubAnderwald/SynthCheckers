@@ -79,10 +79,10 @@ Based on `prd-multiplayer-accounts.md` and `tdd-multiplayer-accounts.md`
 - [ ] 3.0 User Profile and Statistics System
   - [x] 3.1 Create Firestore document structure for user profiles with ELO ratings
   - [x] 3.2 Implement user profile display component with stats (wins, losses, games played)
-  - [ ] 3.3 Build profile editing interface for display name updates
-  - [ ] 3.4 Create game history component with pagination support
-  - [ ] 3.5 Implement ELO rating calculation system with proper K-factors
-  - [ ] 3.6 Add statistics visualization components (win percentage, rating progression)
+  - [x] 3.3 Build profile editing interface for display name updates
+  - [x] 3.4 Create game history component with pagination support
+  - [x] 3.5 Implement ELO rating calculation system with proper K-factors
+  - [x] 3.6 Add statistics visualization components (win percentage, rating progression)
   - [ ] 3.7 Create public profile view for other players
   - [ ] 3.8 Implement user search functionality by display name
   - [ ] 3.9 Write unit tests for profile components and ELO calculations
