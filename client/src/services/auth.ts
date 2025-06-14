@@ -31,6 +31,7 @@ export interface UserProfile {
   updatedAt: Date;
   lastOnline: Date;
   isOnline: boolean;
+  isNewUser?: boolean;
 }
 
 export interface CreateUserProfile {
@@ -165,6 +166,7 @@ class AuthService {
         updatedAt: new Date(),
         lastOnline: new Date(),
         isOnline: true,
+        isNewUser: true, // Flag for first-time setup
       };
 
       await setDoc(userDocRef, {

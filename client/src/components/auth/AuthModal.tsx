@@ -2,7 +2,7 @@ import React from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { LoginButton } from './LoginButton';
 import { UserProfile } from './UserProfile';
-import { Dialog, DialogContent, DialogOverlay } from '../ui/dialog';
+import { Dialog, DialogContent, DialogOverlay, DialogTitle, DialogDescription } from '../ui/dialog';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -29,6 +29,12 @@ export function AuthModal({ isOpen, onClose, showProfile = false }: AuthModalPro
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogOverlay className="bg-black/50 backdrop-blur-sm" />
       <DialogContent className="bg-transparent border-none shadow-none p-6 max-w-lg">
+        <DialogTitle className="sr-only">
+          {isAuthenticated ? 'User Profile' : 'Sign In'}
+        </DialogTitle>
+        <DialogDescription className="sr-only">
+          {isAuthenticated ? 'View and manage your user profile' : 'Sign in to access online features'}
+        </DialogDescription>
         <div className="relative">
           {/* Close button */}
           <button

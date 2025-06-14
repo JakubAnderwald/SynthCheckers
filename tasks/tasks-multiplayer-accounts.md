@@ -21,6 +21,7 @@ Based on `prd-multiplayer-accounts.md` and `tdd-multiplayer-accounts.md`
 - `client/src/components/auth/UserProfile.tsx` - User profile display with stats and logout functionality
 - `client/src/components/auth/AuthModal.tsx` - Modal wrapper for authentication components
 - `client/src/components/auth/AuthHeader.tsx` - Header component integrating authentication UI
+- `client/src/components/auth/ProtectedRoute.tsx` - Protected route wrapper and HOC for authenticated access
 - `.env.example` - Environment variables template for Firebase configuration
 - `.env.development` - Development environment settings for Firebase emulators
 - `firebase.json` - Firebase hosting and emulator configuration
@@ -68,7 +69,7 @@ Based on `prd-multiplayer-accounts.md` and `tdd-multiplayer-accounts.md`
   - [x] 2.2 Implement user session management and persistence
   - [x] 2.3 Create authentication context provider for React state management
   - [x] 2.4 Build login/logout UI components with Google sign-in button
-  - [ ] 2.5 Implement protected route wrapper for authenticated pages
+  - [x] 2.5 Implement protected route wrapper for authenticated pages
   - [ ] 2.6 Handle first-time user registration and display name setup
   - [ ] 2.7 Create user document in Firestore on initial authentication
   - [ ] 2.8 Add authentication state management to Zustand store
