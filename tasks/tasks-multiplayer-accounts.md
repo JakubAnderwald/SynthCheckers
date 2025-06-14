@@ -87,16 +87,16 @@ Based on `prd-multiplayer-accounts.md` and `tdd-multiplayer-accounts.md`
   - [x] 3.8 Implement user search functionality by display name
   - [x] 3.9 Write unit tests for profile components and ELO calculations
 
-- [ ] 4.0 Friend System Implementation
+- [x] 4.0 Friend System Implementation
   - [x] 4.1 Create Firestore subcollection structure for friendships
-  - [ ] 4.2 Implement friend request sending functionality
-  - [ ] 4.3 Build friend request management interface (accept/decline)
-  - [ ] 4.4 Create friends list component with real-time online status
-  - [ ] 4.5 Add friend search and invitation system
-  - [ ] 4.6 Implement friend removal functionality
-  - [ ] 4.7 Create real-time listeners for friend status updates
-  - [ ] 4.8 Add friend notifications for requests and status changes
-  - [ ] 4.9 Write unit tests for friend system components and logic
+  - [x] 4.2 Implement friend request sending functionality
+  - [x] 4.3 Build friend request management interface (accept/decline)
+  - [x] 4.4 Create friends list component with real-time online status
+  - [x] 4.5 Add friend search and invitation system
+  - [x] 4.6 Implement friend removal functionality
+  - [x] 4.7 Create real-time listeners for friend status updates
+  - [x] 4.8 Add friend notifications for requests and status changes
+  - [x] 4.9 Write unit tests for friend system components and logic
 
 - [ ] 5.0 Matchmaking and Game Invitation System
   - [ ] 5.1 Create matchmaking queue Firestore collection and management

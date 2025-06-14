@@ -84,6 +84,18 @@ The application follows a client-server architecture with a focus on frontend-he
 
 ## Recent Changes
 
+- **June 14, 2025 - Complete Friend System Implementation**: Finished Section 4.0 friend system infrastructure
+  - Created comprehensive Firestore subcollection structure for friendships and friend requests
+  - Built complete friend request system with sending, accepting, declining functionality
+  - Implemented FriendsList component with real-time online status indicators
+  - Developed PendingRequests interface for managing incoming and outgoing requests
+  - Created FriendSearch component with user discovery and invitation features
+  - Added friend removal functionality with confirmation dialogs
+  - Implemented real-time listeners for friend status updates using Firestore snapshots
+  - Built notification system using toast messages for friend-related actions
+  - Created comprehensive unit tests for friend service components and business logic
+  - Integrated user search service for finding players by display name
+
 - **June 14, 2025 - Complete User Profile and Statistics System**: Finished Section 3.0 profile infrastructure
   - Created comprehensive Firestore document structure with ELO ratings and game history
   - Built ProfileStats component with rating displays and win/loss statistics
