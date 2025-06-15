@@ -151,14 +151,24 @@ export function FriendSearch() {
                       </div>
                     </div>
                   </div>
-                  <Button
-                    size="sm"
-                    onClick={() => handleSendRequest(result.uid, result.displayName)}
-                    className="bg-blue-600 hover:bg-blue-700 text-white"
-                  >
-                    <UserPlus className="h-4 w-4 mr-2" />
-                    Add Friend
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      onClick={() => handleSendRequest(result.uid, result.displayName)}
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                    >
+                      <UserPlus className="h-4 w-4 mr-2" />
+                      Add Friend
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={() => handleSendChallenge(result.uid, result.displayName)}
+                      className="bg-orange-600 hover:bg-orange-700 text-white"
+                    >
+                      <Swords className="h-4 w-4 mr-2" />
+                      Challenge
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -177,6 +187,16 @@ export function FriendSearch() {
         isOpen={showRequestModal}
         onClose={() => {
           setShowRequestModal(false);
+          setSelectedUser(null);
+        }}
+        recipientUid={selectedUser?.uid}
+        recipientDisplayName={selectedUser?.displayName}
+      />
+
+      <ChallengeModal
+        isOpen={showChallengeModal}
+        onClose={() => {
+          setShowChallengeModal(false);
           setSelectedUser(null);
         }}
         recipientUid={selectedUser?.uid}
