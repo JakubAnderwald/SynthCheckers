@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, UserPlus, User } from 'lucide-react';
+import { Search, UserPlus, User, Swords } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Badge } from '../ui/badge';
 import { useAuth } from '../../contexts/AuthContext';
 import { FriendRequestModal } from './FriendRequestModal';
+import { ChallengeModal } from '../game/ChallengeModal';
 import { searchUsers } from '../../services/userService';
 import { toast } from 'sonner';
 
@@ -26,6 +27,7 @@ export function FriendSearch() {
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [showRequestModal, setShowRequestModal] = useState(false);
+  const [showChallengeModal, setShowChallengeModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<{ uid: string; displayName: string } | null>(null);
 
   const handleSearch = async () => {
@@ -63,6 +65,11 @@ export function FriendSearch() {
   const handleSendRequest = (targetUid: string, targetDisplayName: string) => {
     setSelectedUser({ uid: targetUid, displayName: targetDisplayName });
     setShowRequestModal(true);
+  };
+
+  const handleSendChallenge = (targetUid: string, targetDisplayName: string) => {
+    setSelectedUser({ uid: targetUid, displayName: targetDisplayName });
+    setShowChallengeModal(true);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
