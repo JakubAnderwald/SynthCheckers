@@ -115,7 +115,28 @@ class GameService {
       )
     );
     
-    if (!existingChallenges.empty) {
+    // Check if any existing challenges are actually still valid (not expired)
+    let hasValidPendingChallenge = false;
+    const now = new Date();
+    
+    for (const doc of existingChallenges.docs) {
+      const data = doc.data();
+      const expiresAt = data.expiresAt?.toDate ? data.expiresAt.toDate() : new Date(data.expiresAt);
+      
+      if (expiresAt > now) {
+        // Challenge is still valid
+        hasValidPendingChallenge = true;
+      } else {
+        // Challenge has expired, mark it as expired
+        console.log('Marking expired challenge as expired:', doc.id);
+        await updateDoc(doc.ref, { 
+          status: 'expired',
+          respondedAt: serverTimestamp()
+        });
+      }
+    }
+    
+    if (hasValidPendingChallenge) {
       throw new Error('You already have a pending challenge with this player');
     }
     
@@ -267,9 +288,24 @@ class GameService {
     
     const incoming: GameChallenge[] = [];
     const outgoing: GameChallenge[] = [];
+    const now = new Date();
     
-    incomingSnapshot.forEach((doc) => {
+    // Process incoming challenges and check for expired ones
+    for (const doc of incomingSnapshot.docs) {
       const data = doc.data();
+      const expiresAt = data.expiresAt?.toDate ? data.expiresAt.toDate() : new Date(data.expiresAt);
+      
+      // If challenge is pending but expired, mark it as expired
+      if (data.status === 'pending' && expiresAt <= now) {
+        console.log('Auto-expiring incoming challenge:', doc.id);
+        await updateDoc(doc.ref, { 
+          status: 'expired',
+          respondedAt: serverTimestamp()
+        });
+        // Don't add expired challenges to the list
+        continue;
+      }
+      
       incoming.push({
         challengeId: doc.id,
         fromUid: data.fromUid,
@@ -285,13 +321,27 @@ class GameService {
         message: data.message,
         status: data.status,
         createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt),
-        expiresAt: data.expiresAt?.toDate ? data.expiresAt.toDate() : new Date(data.expiresAt),
+        expiresAt: expiresAt,
         respondedAt: data.respondedAt?.toDate ? data.respondedAt.toDate() : (data.respondedAt ? new Date(data.respondedAt) : undefined),
       });
-    });
+    }
     
-    outgoingSnapshot.forEach((doc) => {
+    // Process outgoing challenges and check for expired ones
+    for (const doc of outgoingSnapshot.docs) {
       const data = doc.data();
+      const expiresAt = data.expiresAt?.toDate ? data.expiresAt.toDate() : new Date(data.expiresAt);
+      
+      // If challenge is pending but expired, mark it as expired
+      if (data.status === 'pending' && expiresAt <= now) {
+        console.log('Auto-expiring outgoing challenge:', doc.id);
+        await updateDoc(doc.ref, { 
+          status: 'expired',
+          respondedAt: serverTimestamp()
+        });
+        // Don't add expired challenges to the list
+        continue;
+      }
+      
       outgoing.push({
         challengeId: doc.id,
         fromUid: data.fromUid,
@@ -307,10 +357,10 @@ class GameService {
         message: data.message,
         status: data.status,
         createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt),
-        expiresAt: data.expiresAt?.toDate ? data.expiresAt.toDate() : new Date(data.expiresAt),
+        expiresAt: expiresAt,
         respondedAt: data.respondedAt?.toDate ? data.respondedAt.toDate() : (data.respondedAt ? new Date(data.respondedAt) : undefined),
       });
-    });
+    }
     
     return { incoming, outgoing };
   }
