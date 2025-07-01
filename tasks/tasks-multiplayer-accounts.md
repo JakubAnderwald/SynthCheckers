@@ -98,16 +98,16 @@ Based on `prd-multiplayer-accounts.md` and `tdd-multiplayer-accounts.md`
   - [x] 4.8 Add friend notifications for requests and status changes
   - [x] 4.9 Write unit tests for friend system components and logic
 
-- [ ] 5.0 Matchmaking and Game Invitation System
-  - [ ] 5.1 Create matchmaking queue Firestore collection and management
-  - [ ] 5.2 Implement ELO-based opponent pairing algorithm (±100 rating points)
-  - [ ] 5.3 Build matchmaking queue UI with join/leave functionality
-  - [ ] 5.4 Create game invitation system for friend-to-friend matches
-  - [ ] 5.5 Implement real-time matchmaking status updates and notifications
-  - [ ] 5.6 Add matchmaking timeout handling (60 seconds maximum wait)
-  - [ ] 5.7 Create private game room creation and joining
-  - [ ] 5.8 Implement game invitation acceptance/decline workflow
-  - [ ] 5.9 Write unit tests for matchmaking algorithms and invitation logic
+- [x] 5.0 Matchmaking and Game Invitation System
+  - [x] 5.1 Create matchmaking queue Firestore collection and management
+  - [x] 5.2 Implement ELO-based opponent pairing algorithm (±100 rating points)
+  - [x] 5.3 Build matchmaking queue UI with join/leave functionality
+  - [x] 5.4 Create game invitation system for friend-to-friend matches
+  - [x] 5.5 Implement real-time matchmaking status updates and notifications
+  - [x] 5.6 Add matchmaking timeout handling (60 seconds maximum wait)
+  - [x] 5.7 Create private game room creation and joining
+  - [x] 5.8 Implement game invitation acceptance/decline workflow
+  - [x] 5.9 Write unit tests for matchmaking algorithms and invitation logic
 
 - [ ] 6.0 Online Multiplayer Game Implementation
   - [ ] 6.1 Create Firestore game document structure with board state and move history

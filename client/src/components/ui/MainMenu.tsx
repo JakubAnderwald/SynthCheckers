@@ -4,6 +4,7 @@ import { useAudio } from '@/lib/stores/useAudio';
 import { colors } from '@/lib/theme/colors';
 import { useIsMobile } from '@/hooks/use-is-mobile';
 import { FriendsPage } from '@/components/friends/FriendsPage';
+import { MultiplayerPage } from '@/components/multiplayer/MultiplayerPage';
 
 const MainMenu: React.FC = () => {
   const initGame = useCheckersStore(state => state.initGame);
@@ -11,6 +12,7 @@ const MainMenu: React.FC = () => {
   const { toggleMute, isMuted } = useAudio();
   const isMobile = useIsMobile();
   const [showFriends, setShowFriends] = useState(false);
+  const [showMultiplayer, setShowMultiplayer] = useState(false);
   
   // Background grid effect for the menu
   const gridStyle = {
@@ -24,6 +26,13 @@ const MainMenu: React.FC = () => {
   
   if (showFriends) {
     return <FriendsPage onBack={() => setShowFriends(false)} />;
+  }
+
+  if (showMultiplayer) {
+    return <MultiplayerPage onBack={() => setShowMultiplayer(false)} onGameStart={(gameId) => {
+      console.log('Starting multiplayer game:', gameId);
+      // Handle game start - integrate with existing game system
+    }} />;
   }
 
   return (
@@ -75,6 +84,16 @@ const MainMenu: React.FC = () => {
             }}
           >
             Two Players
+          </button>
+          
+          <button
+            onClick={() => setShowMultiplayer(true)}
+            className="w-full py-2 sm:py-3 px-4 sm:px-6 text-base sm:text-lg font-medium rounded-md bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white transition-all duration-200 transform hover:scale-105"
+            style={{ 
+              boxShadow: `0 0 10px #f97316, 0 0 5px #f97316`,
+            }}
+          >
+            Multiplayer
           </button>
           
           <button
