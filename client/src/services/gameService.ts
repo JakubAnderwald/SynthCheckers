@@ -338,9 +338,9 @@ class GameService {
         createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt),
         expiresAt: expiresAt,
         respondedAt: data.respondedAt?.toDate ? data.respondedAt.toDate() : (data.respondedAt ? new Date(data.respondedAt) : undefined),
-      });
-    }
-    
+        });
+      }
+      
       // Process outgoing challenges and check for expired ones
       for (const doc of outgoingSnapshot.docs) {
         const data = doc.data();
@@ -364,23 +364,23 @@ class GameService {
         }
         
         outgoing.push({
-        challengeId: doc.id,
-        fromUid: data.fromUid,
-        fromDisplayName: data.fromDisplayName,
-        fromPhotoURL: data.fromPhotoURL,
-        fromEloRating: data.fromEloRating,
-        toUid: data.toUid,
-        toDisplayName: data.toDisplayName,
-        toPhotoURL: data.toPhotoURL,
-        toEloRating: data.toEloRating,
-        gameType: data.gameType,
-        timeControl: data.timeControl,
-        message: data.message,
-        status: data.status,
-        createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt),
-        expiresAt: expiresAt,
-        respondedAt: data.respondedAt?.toDate ? data.respondedAt.toDate() : (data.respondedAt ? new Date(data.respondedAt) : undefined),
-      });
+          challengeId: doc.id,
+          fromUid: data.fromUid,
+          fromDisplayName: data.fromDisplayName,
+          fromPhotoURL: data.fromPhotoURL,
+          fromEloRating: data.fromEloRating,
+          toUid: data.toUid,
+          toDisplayName: data.toDisplayName,
+          toPhotoURL: data.toPhotoURL,
+          toEloRating: data.toEloRating,
+          gameType: data.gameType,
+          timeControl: data.timeControl,
+          message: data.message,
+          status: data.status,
+          createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt),
+          expiresAt: expiresAt,
+          respondedAt: data.respondedAt?.toDate ? data.respondedAt.toDate() : (data.respondedAt ? new Date(data.respondedAt) : undefined),
+        });
       }
       
       return { incoming, outgoing };
@@ -402,13 +402,15 @@ class GameService {
     const incomingQuery = query(
       collection(firebaseDb, 'gameChallenges'),
       where('toUid', '==', userUid),
-      where('status', 'in', ['pending'])
+      orderBy('createdAt', 'desc'),
+      limit(20)
     );
     
     const outgoingQuery = query(
       collection(firebaseDb, 'gameChallenges'),
       where('fromUid', '==', userUid),
-      where('status', 'in', ['pending'])
+      orderBy('createdAt', 'desc'),
+      limit(20)
     );
     
     let incomingChallenges: GameChallenge[] = [];
@@ -418,6 +420,12 @@ class GameService {
       incomingChallenges = [];
       snapshot.forEach((doc) => {
         const data = doc.data();
+        
+        // Only include pending challenges for real-time notifications
+        if (data.status !== 'pending') {
+          return;
+        }
+        
         incomingChallenges.push({
           challengeId: doc.id,
           fromUid: data.fromUid,
@@ -444,6 +452,12 @@ class GameService {
       outgoingChallenges = [];
       snapshot.forEach((doc) => {
         const data = doc.data();
+        
+        // Only include pending challenges for real-time notifications
+        if (data.status !== 'pending') {
+          return;
+        }
+        
         outgoingChallenges.push({
           challengeId: doc.id,
           fromUid: data.fromUid,
