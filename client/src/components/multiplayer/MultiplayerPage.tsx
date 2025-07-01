@@ -18,15 +18,15 @@ interface MultiplayerPageProps {
 export function MultiplayerPage({ onBack, onGameStart }: MultiplayerPageProps) {
   const [activeTab, setActiveTab] = useState('quick-match');
   const [challengeModalOpen, setChallengeModalOpen] = useState(false);
-  const [selectedFriendUid, setSelectedFriendUid] = useState<string | null>(null);
+  const [selectedFriend, setSelectedFriend] = useState<{ uid: string; displayName: string } | null>(null);
 
   const handleGameStart = (gameId: string) => {
     console.log('Starting game:', gameId);
     onGameStart?.(gameId);
   };
 
-  const handleChallengeToGame = (friendUid: string) => {
-    setSelectedFriendUid(friendUid);
+  const handleChallengeToGame = (friendUid: string, friendDisplayName?: string) => {
+    setSelectedFriend({ uid: friendUid, displayName: friendDisplayName || 'Unknown Player' });
     setChallengeModalOpen(true);
   };
 
@@ -206,10 +206,11 @@ export function MultiplayerPage({ onBack, onGameStart }: MultiplayerPageProps) {
       {/* Challenge Modal */}
       <ChallengeModal
         isOpen={challengeModalOpen}
-        recipientUid={selectedFriendUid || undefined}
+        recipientUid={selectedFriend?.uid}
+        recipientDisplayName={selectedFriend?.displayName}
         onClose={() => {
           setChallengeModalOpen(false);
-          setSelectedFriendUid(null);
+          setSelectedFriend(null);
         }}
       />
     </div>

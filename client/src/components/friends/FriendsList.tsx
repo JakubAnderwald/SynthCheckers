@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 
 interface FriendsListProps {
-  onChallengeToGame?: (friendUid: string) => void;
+  onChallengeToGame?: (friendUid: string, friendDisplayName?: string) => void;
 }
 
 export function FriendsList({ onChallengeToGame }: FriendsListProps) {
@@ -148,7 +148,7 @@ export function FriendsList({ onChallengeToGame }: FriendsListProps) {
                   {onChallengeToGame && (
                     <Button
                       size="sm"
-                      onClick={() => onChallengeToGame(friend.uid)}
+                      onClick={() => onChallengeToGame(friend.uid, friend.displayName)}
                       className="bg-blue-600 hover:bg-blue-700 text-white"
                       title="Challenge to game"
                     >
@@ -214,7 +214,7 @@ export function FriendsList({ onChallengeToGame }: FriendsListProps) {
                   {onChallengeToGame && (
                     <Button
                       size="sm"
-                      onClick={() => onChallengeToGame(friend.uid)}
+                      onClick={() => onChallengeToGame(friend.uid, friend.displayName)}
                       className="bg-blue-600 hover:bg-blue-700 text-white opacity-75 hover:opacity-100"
                       title="Challenge to game"
                     >
