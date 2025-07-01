@@ -68,28 +68,28 @@ export function MultiplayerPage({ onBack, onGameStart }: MultiplayerPageProps) {
           <TabsList className="grid w-full grid-cols-4 bg-slate-800 p-1">
             <TabsTrigger 
               value="quick-match" 
-              className="data-[state=active]:bg-purple-600 data-[state=active]:text-white flex items-center gap-2"
+              className="text-slate-300 data-[state=active]:bg-purple-600 data-[state=active]:text-white flex items-center gap-2"
             >
               <Zap className="h-4 w-4" />
               Quick Match
             </TabsTrigger>
             <TabsTrigger 
               value="challenges" 
-              className="data-[state=active]:bg-purple-600 data-[state=active]:text-white flex items-center gap-2"
+              className="text-slate-300 data-[state=active]:bg-purple-600 data-[state=active]:text-white flex items-center gap-2"
             >
               <Swords className="h-4 w-4" />
               Challenges
             </TabsTrigger>
             <TabsTrigger 
               value="friends" 
-              className="data-[state=active]:bg-purple-600 data-[state=active]:text-white flex items-center gap-2"
+              className="text-slate-300 data-[state=active]:bg-purple-600 data-[state=active]:text-white flex items-center gap-2"
             >
               <Users className="h-4 w-4" />
               Friends
             </TabsTrigger>
             <TabsTrigger 
               value="find-players" 
-              className="data-[state=active]:bg-purple-600 data-[state=active]:text-white flex items-center gap-2"
+              className="text-slate-300 data-[state=active]:bg-purple-600 data-[state=active]:text-white flex items-center gap-2"
             >
               <Search className="h-4 w-4" />
               Find Players
