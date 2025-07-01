@@ -268,20 +268,20 @@ class GameService {
     try {
       const firebaseDb = await getFirebaseDb();
       
-      // Get incoming challenges
+      // Get incoming challenges (simplified query to avoid complex index requirement)
       const incomingQuery = query(
         collection(firebaseDb, 'gameChallenges'),
         where('toUid', '==', userUid),
-        where('status', 'in', ['pending', 'accepted', 'declined']),
-        orderBy('createdAt', 'desc')
+        orderBy('createdAt', 'desc'),
+        limit(50)
       );
       
-      // Get outgoing challenges
+      // Get outgoing challenges (simplified query to avoid complex index requirement)
       const outgoingQuery = query(
         collection(firebaseDb, 'gameChallenges'),
         where('fromUid', '==', userUid),
-        where('status', 'in', ['pending', 'accepted', 'declined', 'cancelled']),
-        orderBy('createdAt', 'desc')
+        orderBy('createdAt', 'desc'),
+        limit(50)
       );
       
       console.log('Executing challenge queries...');
@@ -299,23 +299,29 @@ class GameService {
       const outgoing: GameChallenge[] = [];
       const now = new Date();
     
-    // Process incoming challenges and check for expired ones
-    for (const doc of incomingSnapshot.docs) {
-      const data = doc.data();
-      const expiresAt = data.expiresAt?.toDate ? data.expiresAt.toDate() : new Date(data.expiresAt);
-      
-      // If challenge is pending but expired, mark it as expired
-      if (data.status === 'pending' && expiresAt <= now) {
-        console.log('Auto-expiring incoming challenge:', doc.id);
-        await updateDoc(doc.ref, { 
-          status: 'expired',
-          respondedAt: serverTimestamp()
-        });
-        // Don't add expired challenges to the list
-        continue;
-      }
-      
-      incoming.push({
+      // Process incoming challenges and check for expired ones
+      for (const doc of incomingSnapshot.docs) {
+        const data = doc.data();
+        
+        // Skip challenges that are not relevant (cancelled, expired)
+        if (!['pending', 'accepted', 'declined'].includes(data.status)) {
+          continue;
+        }
+        
+        const expiresAt = data.expiresAt?.toDate ? data.expiresAt.toDate() : new Date(data.expiresAt);
+        
+        // If challenge is pending but expired, mark it as expired
+        if (data.status === 'pending' && expiresAt <= now) {
+          console.log('Auto-expiring incoming challenge:', doc.id);
+          await updateDoc(doc.ref, { 
+            status: 'expired',
+            respondedAt: serverTimestamp()
+          });
+          // Don't add expired challenges to the list
+          continue;
+        }
+        
+        incoming.push({
         challengeId: doc.id,
         fromUid: data.fromUid,
         fromDisplayName: data.fromDisplayName,
@@ -335,23 +341,29 @@ class GameService {
       });
     }
     
-    // Process outgoing challenges and check for expired ones
-    for (const doc of outgoingSnapshot.docs) {
-      const data = doc.data();
-      const expiresAt = data.expiresAt?.toDate ? data.expiresAt.toDate() : new Date(data.expiresAt);
-      
-      // If challenge is pending but expired, mark it as expired
-      if (data.status === 'pending' && expiresAt <= now) {
-        console.log('Auto-expiring outgoing challenge:', doc.id);
-        await updateDoc(doc.ref, { 
-          status: 'expired',
-          respondedAt: serverTimestamp()
-        });
-        // Don't add expired challenges to the list
-        continue;
-      }
-      
-      outgoing.push({
+      // Process outgoing challenges and check for expired ones
+      for (const doc of outgoingSnapshot.docs) {
+        const data = doc.data();
+        
+        // Skip challenges that are not relevant (expired)
+        if (!['pending', 'accepted', 'declined', 'cancelled'].includes(data.status)) {
+          continue;
+        }
+        
+        const expiresAt = data.expiresAt?.toDate ? data.expiresAt.toDate() : new Date(data.expiresAt);
+        
+        // If challenge is pending but expired, mark it as expired
+        if (data.status === 'pending' && expiresAt <= now) {
+          console.log('Auto-expiring outgoing challenge:', doc.id);
+          await updateDoc(doc.ref, { 
+            status: 'expired',
+            respondedAt: serverTimestamp()
+          });
+          // Don't add expired challenges to the list
+          continue;
+        }
+        
+        outgoing.push({
         challengeId: doc.id,
         fromUid: data.fromUid,
         fromDisplayName: data.fromDisplayName,
