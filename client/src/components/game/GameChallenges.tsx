@@ -30,11 +30,18 @@ export function GameChallenges({ onGameStart }: GameChallengesProps) {
 
     const loadChallenges = async () => {
       try {
+        console.log('GameChallenges: Loading challenges for user:', user.uid);
         const challengeData = await gameService.getGameChallenges(user.uid);
+        console.log('GameChallenges: Successfully loaded challenges:', challengeData);
         setChallenges(challengeData);
       } catch (error) {
-        console.error('Error loading challenges:', error);
-        toast.error('Failed to load game challenges');
+        console.error('GameChallenges: Error loading challenges:', error);
+        // Show more specific error messages
+        if (error instanceof Error) {
+          toast.error(`Failed to load game challenges: ${error.message}`);
+        } else {
+          toast.error('Failed to load game challenges: Unknown error');
+        }
       } finally {
         setLoading(false);
       }

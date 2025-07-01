@@ -263,32 +263,41 @@ class GameService {
     incoming: GameChallenge[];
     outgoing: GameChallenge[];
   }> {
-    const firebaseDb = await getFirebaseDb();
+    console.log('Loading game challenges for user:', userUid);
     
-    // Get incoming challenges
-    const incomingQuery = query(
-      collection(firebaseDb, 'gameChallenges'),
-      where('toUid', '==', userUid),
-      where('status', 'in', ['pending', 'accepted', 'declined']),
-      orderBy('createdAt', 'desc')
-    );
-    
-    // Get outgoing challenges
-    const outgoingQuery = query(
-      collection(firebaseDb, 'gameChallenges'),
-      where('fromUid', '==', userUid),
-      where('status', 'in', ['pending', 'accepted', 'declined', 'cancelled']),
-      orderBy('createdAt', 'desc')
-    );
-    
-    const [incomingSnapshot, outgoingSnapshot] = await Promise.all([
-      getDocs(incomingQuery),
-      getDocs(outgoingQuery)
-    ]);
-    
-    const incoming: GameChallenge[] = [];
-    const outgoing: GameChallenge[] = [];
-    const now = new Date();
+    try {
+      const firebaseDb = await getFirebaseDb();
+      
+      // Get incoming challenges
+      const incomingQuery = query(
+        collection(firebaseDb, 'gameChallenges'),
+        where('toUid', '==', userUid),
+        where('status', 'in', ['pending', 'accepted', 'declined']),
+        orderBy('createdAt', 'desc')
+      );
+      
+      // Get outgoing challenges
+      const outgoingQuery = query(
+        collection(firebaseDb, 'gameChallenges'),
+        where('fromUid', '==', userUid),
+        where('status', 'in', ['pending', 'accepted', 'declined', 'cancelled']),
+        orderBy('createdAt', 'desc')
+      );
+      
+      console.log('Executing challenge queries...');
+      const [incomingSnapshot, outgoingSnapshot] = await Promise.all([
+        getDocs(incomingQuery),
+        getDocs(outgoingQuery)
+      ]);
+      
+      console.log('Query results:', {
+        incoming: incomingSnapshot.size,
+        outgoing: outgoingSnapshot.size
+      });
+      
+      const incoming: GameChallenge[] = [];
+      const outgoing: GameChallenge[] = [];
+      const now = new Date();
     
     // Process incoming challenges and check for expired ones
     for (const doc of incomingSnapshot.docs) {
@@ -360,9 +369,13 @@ class GameService {
         expiresAt: expiresAt,
         respondedAt: data.respondedAt?.toDate ? data.respondedAt.toDate() : (data.respondedAt ? new Date(data.respondedAt) : undefined),
       });
+      }
+      
+      return { incoming, outgoing };
+    } catch (error) {
+      console.error('Error loading game challenges:', error);
+      throw error;
     }
-    
-    return { incoming, outgoing };
   }
 
   /**
