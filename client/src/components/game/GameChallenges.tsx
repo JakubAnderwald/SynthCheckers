@@ -51,10 +51,17 @@ export function GameChallenges({ onGameStart }: GameChallengesProps) {
 
     // Set up real-time listener
     const setupListener = async () => {
-      const unsubscribe = await gameService.onGameChallengesChange(user.uid, (challengeData) => {
-        setChallenges(challengeData);
-      });
-      return unsubscribe;
+      try {
+        console.log('GameChallenges: Setting up real-time listener for user:', user.uid);
+        const unsubscribe = await gameService.onGameChallengesChange(user.uid, (challengeData) => {
+          console.log('GameChallenges: Real-time update received:', challengeData);
+          setChallenges(challengeData);
+        });
+        return unsubscribe;
+      } catch (error) {
+        console.error('GameChallenges: Error setting up real-time listener:', error);
+        return () => {}; // Return empty function if listener setup fails
+      }
     };
 
     setupListener().then((unsubscribe) => {
