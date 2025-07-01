@@ -268,19 +268,17 @@ class GameService {
     try {
       const firebaseDb = await getFirebaseDb();
       
-      // Get incoming challenges (simplified query to avoid complex index requirement)
+      // Get incoming challenges (no ordering to avoid index requirement)
       const incomingQuery = query(
         collection(firebaseDb, 'gameChallenges'),
         where('toUid', '==', userUid),
-        orderBy('createdAt', 'desc'),
         limit(50)
       );
       
-      // Get outgoing challenges (simplified query to avoid complex index requirement)
+      // Get outgoing challenges (no ordering to avoid index requirement)
       const outgoingQuery = query(
         collection(firebaseDb, 'gameChallenges'),
         where('fromUid', '==', userUid),
-        orderBy('createdAt', 'desc'),
         limit(50)
       );
       
@@ -383,6 +381,10 @@ class GameService {
         });
       }
       
+      // Sort challenges by creation date (newest first) since we can't orderBy in query
+      incoming.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+      outgoing.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+      
       return { incoming, outgoing };
     } catch (error) {
       console.error('Error loading game challenges:', error);
@@ -402,14 +404,12 @@ class GameService {
     const incomingQuery = query(
       collection(firebaseDb, 'gameChallenges'),
       where('toUid', '==', userUid),
-      orderBy('createdAt', 'desc'),
       limit(20)
     );
     
     const outgoingQuery = query(
       collection(firebaseDb, 'gameChallenges'),
       where('fromUid', '==', userUid),
-      orderBy('createdAt', 'desc'),
       limit(20)
     );
     
