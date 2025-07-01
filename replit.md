@@ -84,6 +84,26 @@ The application follows a client-server architecture with a focus on frontend-he
 
 ## Recent Changes
 
+- **July 1, 2025 - Streamlined Main Menu Navigation**: Consolidated friend functionality into Multiplayer section
+  - Removed redundant standalone "Friends" menu option from main menu
+  - All social features (friends, challenges, matchmaking) now accessible through single "Multiplayer" entry
+  - Simplified user navigation by eliminating duplicate pathways to friend features
+  - Enhanced UI consistency across multiplayer features
+
+- **July 1, 2025 - Enhanced Friend Challenge System**: Added comprehensive challenge functionality to Friends tab
+  - Added challenge buttons for both online and offline friends in Friends list
+  - Integrated ChallengeModal with Friends tab for seamless game invitations
+  - Enhanced UI styling with gamepad icons and proper visual feedback
+  - Maintained consistent challenge experience across all multiplayer tabs
+  - Fixed expired challenge cleanup to prevent blocking new challenges
+
+- **July 1, 2025 - Fixed Critical Multiplayer Issues**: Resolved timestamp and permission errors
+  - Fixed "Cannot read properties of null (reading 'toDate')" error in game challenges
+  - Added robust timestamp handling for Firestore server timestamps and Date objects
+  - Enhanced Firestore security rules for gameChallenges and gameRooms collections
+  - Improved dropdown text visibility with cyan styling on dark backgrounds
+  - Implemented automatic expired challenge detection and cleanup
+
 - **June 14, 2025 - Complete Game Challenges and Matchmaking System**: Finished Section 5.0 multiplayer infrastructure
   - Built comprehensive game service with challenge system for sending, accepting, and declining game challenges
   - Implemented time control system with blitz (3+2), rapid (10+5), and custom time settings

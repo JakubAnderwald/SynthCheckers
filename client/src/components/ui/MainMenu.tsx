@@ -3,7 +3,6 @@ import { useCheckersStore } from '@/lib/stores/useCheckersStore';
 import { useAudio } from '@/lib/stores/useAudio';
 import { colors } from '@/lib/theme/colors';
 import { useIsMobile } from '@/hooks/use-is-mobile';
-import { FriendsPage } from '@/components/friends/FriendsPage';
 import { MultiplayerPage } from '@/components/multiplayer/MultiplayerPage';
 
 const MainMenu: React.FC = () => {
@@ -11,7 +10,6 @@ const MainMenu: React.FC = () => {
   const toggleSettings = useCheckersStore(state => state.toggleSettings);
   const { toggleMute, isMuted } = useAudio();
   const isMobile = useIsMobile();
-  const [showFriends, setShowFriends] = useState(false);
   const [showMultiplayer, setShowMultiplayer] = useState(false);
   
   // Background grid effect for the menu
@@ -24,9 +22,7 @@ const MainMenu: React.FC = () => {
     backgroundPosition: 'center center',
   };
   
-  if (showFriends) {
-    return <FriendsPage onBack={() => setShowFriends(false)} />;
-  }
+
 
   if (showMultiplayer) {
     return <MultiplayerPage onBack={() => setShowMultiplayer(false)} onGameStart={(gameId) => {
@@ -96,16 +92,7 @@ const MainMenu: React.FC = () => {
             Multiplayer
           </button>
           
-          <button
-            onClick={() => setShowFriends(true)}
-            className="w-full py-2 sm:py-3 px-4 sm:px-6 text-base sm:text-lg font-medium rounded-md bg-neon-cyan hover:bg-opacity-80 text-white transition-all duration-200 transform hover:scale-105"
-            style={{ 
-              boxShadow: `0 0 10px ${colors.neon.cyan}, 0 0 5px ${colors.neon.cyan}`,
-            }}
-          >
-            Friends
-          </button>
-          
+
           <button
             onClick={toggleSettings}
             className="w-full py-2 sm:py-3 px-4 sm:px-6 text-base sm:text-lg font-medium rounded-md bg-neon-purple hover:bg-opacity-80 text-white transition-all duration-200 transform hover:scale-105"
