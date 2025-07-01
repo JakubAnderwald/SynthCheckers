@@ -284,9 +284,9 @@ class GameService {
         timeControl: data.timeControl,
         message: data.message,
         status: data.status,
-        createdAt: data.createdAt.toDate(),
-        expiresAt: data.expiresAt.toDate(),
-        respondedAt: data.respondedAt?.toDate(),
+        createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt),
+        expiresAt: data.expiresAt?.toDate ? data.expiresAt.toDate() : new Date(data.expiresAt),
+        respondedAt: data.respondedAt?.toDate ? data.respondedAt.toDate() : (data.respondedAt ? new Date(data.respondedAt) : undefined),
       });
     });
     
@@ -306,9 +306,9 @@ class GameService {
         timeControl: data.timeControl,
         message: data.message,
         status: data.status,
-        createdAt: data.createdAt.toDate(),
-        expiresAt: data.expiresAt.toDate(),
-        respondedAt: data.respondedAt?.toDate(),
+        createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt),
+        expiresAt: data.expiresAt?.toDate ? data.expiresAt.toDate() : new Date(data.expiresAt),
+        respondedAt: data.respondedAt?.toDate ? data.respondedAt.toDate() : (data.respondedAt ? new Date(data.respondedAt) : undefined),
       });
     });
     
@@ -357,9 +357,9 @@ class GameService {
           timeControl: data.timeControl,
           message: data.message,
           status: data.status,
-          createdAt: data.createdAt.toDate(),
-          expiresAt: data.expiresAt.toDate(),
-          respondedAt: data.respondedAt?.toDate(),
+          createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt),
+          expiresAt: data.expiresAt?.toDate ? data.expiresAt.toDate() : new Date(data.expiresAt),
+          respondedAt: data.respondedAt?.toDate ? data.respondedAt.toDate() : (data.respondedAt ? new Date(data.respondedAt) : undefined),
         });
       });
       callback({ incoming: incomingChallenges, outgoing: outgoingChallenges });
@@ -383,9 +383,9 @@ class GameService {
           timeControl: data.timeControl,
           message: data.message,
           status: data.status,
-          createdAt: data.createdAt.toDate(),
-          expiresAt: data.expiresAt.toDate(),
-          respondedAt: data.respondedAt?.toDate(),
+          createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt),
+          expiresAt: data.expiresAt?.toDate ? data.expiresAt.toDate() : new Date(data.expiresAt),
+          respondedAt: data.respondedAt?.toDate ? data.respondedAt.toDate() : (data.respondedAt ? new Date(data.respondedAt) : undefined),
         });
       });
       callback({ incoming: incomingChallenges, outgoing: outgoingChallenges });
