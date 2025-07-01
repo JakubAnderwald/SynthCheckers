@@ -40,10 +40,24 @@ service cloud.firestore {
     }
     
     // Game challenges - users can manage challenges they send or receive
-    match /challenges/{challengeId} {
+    match /gameChallenges/{challengeId} {
       allow read, write: if request.auth != null && 
                             (request.auth.uid == resource.data.fromUid || 
                              request.auth.uid == resource.data.toUid);
+      // Allow creating new game challenges
+      allow create: if request.auth != null && 
+                       request.auth.uid == request.resource.data.fromUid;
+    }
+    
+    // Game rooms - users can manage game rooms they participate in
+    match /gameRooms/{gameId} {
+      allow read, write: if request.auth != null && 
+                            (request.auth.uid == resource.data.playerRed.uid || 
+                             request.auth.uid == resource.data.playerBlue.uid);
+      // Allow creating new game rooms
+      allow create: if request.auth != null && 
+                       (request.auth.uid == request.resource.data.playerRed.uid || 
+                        request.auth.uid == request.resource.data.playerBlue.uid);
     }
     
     // Leaderboard - all authenticated users can read

@@ -119,10 +119,10 @@ export function ChallengeModal({
                 <SelectValue placeholder="Select time control" />
               </SelectTrigger>
               <SelectContent className="bg-slate-800 border-purple-500/30">
-                <SelectItem value="none">No Time Limit</SelectItem>
-                <SelectItem value="blitz">Blitz (3+2)</SelectItem>
-                <SelectItem value="rapid">Rapid (10+5)</SelectItem>
-                <SelectItem value="custom">Custom</SelectItem>
+                <SelectItem value="none" className="text-cyan-100 focus:bg-purple-600 focus:text-white">No Time Limit</SelectItem>
+                <SelectItem value="blitz" className="text-cyan-100 focus:bg-purple-600 focus:text-white">Blitz (3+2)</SelectItem>
+                <SelectItem value="rapid" className="text-cyan-100 focus:bg-purple-600 focus:text-white">Rapid (10+5)</SelectItem>
+                <SelectItem value="custom" className="text-cyan-100 focus:bg-purple-600 focus:text-white">Custom</SelectItem>
               </SelectContent>
             </Select>
 
@@ -135,12 +135,12 @@ export function ChallengeModal({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="bg-slate-800 border-purple-500/30">
-                      <SelectItem value="1">1 min</SelectItem>
-                      <SelectItem value="3">3 min</SelectItem>
-                      <SelectItem value="5">5 min</SelectItem>
-                      <SelectItem value="10">10 min</SelectItem>
-                      <SelectItem value="15">15 min</SelectItem>
-                      <SelectItem value="30">30 min</SelectItem>
+                      <SelectItem value="1" className="text-cyan-100 focus:bg-purple-600 focus:text-white">1 min</SelectItem>
+                      <SelectItem value="3" className="text-cyan-100 focus:bg-purple-600 focus:text-white">3 min</SelectItem>
+                      <SelectItem value="5" className="text-cyan-100 focus:bg-purple-600 focus:text-white">5 min</SelectItem>
+                      <SelectItem value="10" className="text-cyan-100 focus:bg-purple-600 focus:text-white">10 min</SelectItem>
+                      <SelectItem value="15" className="text-cyan-100 focus:bg-purple-600 focus:text-white">15 min</SelectItem>
+                      <SelectItem value="30" className="text-cyan-100 focus:bg-purple-600 focus:text-white">30 min</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -151,12 +151,12 @@ export function ChallengeModal({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="bg-slate-800 border-purple-500/30">
-                      <SelectItem value="0">0 sec</SelectItem>
-                      <SelectItem value="2">2 sec</SelectItem>
-                      <SelectItem value="5">5 sec</SelectItem>
-                      <SelectItem value="10">10 sec</SelectItem>
-                      <SelectItem value="15">15 sec</SelectItem>
-                      <SelectItem value="30">30 sec</SelectItem>
+                      <SelectItem value="0" className="text-cyan-100 focus:bg-purple-600 focus:text-white">0 sec</SelectItem>
+                      <SelectItem value="2" className="text-cyan-100 focus:bg-purple-600 focus:text-white">2 sec</SelectItem>
+                      <SelectItem value="5" className="text-cyan-100 focus:bg-purple-600 focus:text-white">5 sec</SelectItem>
+                      <SelectItem value="10" className="text-cyan-100 focus:bg-purple-600 focus:text-white">10 sec</SelectItem>
+                      <SelectItem value="15" className="text-cyan-100 focus:bg-purple-600 focus:text-white">15 sec</SelectItem>
+                      <SelectItem value="30" className="text-cyan-100 focus:bg-purple-600 focus:text-white">30 sec</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
