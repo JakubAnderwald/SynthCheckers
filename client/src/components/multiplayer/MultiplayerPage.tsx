@@ -8,6 +8,7 @@ import { GameChallenges } from '../game/GameChallenges';
 import { FriendSearch } from '../friends/FriendSearch';
 import { FriendsList } from '../friends/FriendsList';
 import { PendingRequests } from '../friends/PendingRequests';
+import { ChallengeModal } from '../game/ChallengeModal';
 
 interface MultiplayerPageProps {
   onBack: () => void;
@@ -16,10 +17,17 @@ interface MultiplayerPageProps {
 
 export function MultiplayerPage({ onBack, onGameStart }: MultiplayerPageProps) {
   const [activeTab, setActiveTab] = useState('quick-match');
+  const [challengeModalOpen, setChallengeModalOpen] = useState(false);
+  const [selectedFriendUid, setSelectedFriendUid] = useState<string | null>(null);
 
   const handleGameStart = (gameId: string) => {
     console.log('Starting game:', gameId);
     onGameStart?.(gameId);
+  };
+
+  const handleChallengeToGame = (friendUid: string) => {
+    setSelectedFriendUid(friendUid);
+    setChallengeModalOpen(true);
   };
 
   return (
@@ -141,7 +149,7 @@ export function MultiplayerPage({ onBack, onGameStart }: MultiplayerPageProps) {
           <TabsContent value="friends" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="space-y-6">
-                <FriendsList />
+                <FriendsList onChallengeToGame={handleChallengeToGame} />
                 <PendingRequests />
               </div>
               
@@ -194,6 +202,16 @@ export function MultiplayerPage({ onBack, onGameStart }: MultiplayerPageProps) {
           </TabsContent>
         </Tabs>
       </div>
+      
+      {/* Challenge Modal */}
+      <ChallengeModal
+        isOpen={challengeModalOpen}
+        recipientUid={selectedFriendUid || undefined}
+        onClose={() => {
+          setChallengeModalOpen(false);
+          setSelectedFriendUid(null);
+        }}
+      />
     </div>
   );
 }

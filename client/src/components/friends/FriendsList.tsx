@@ -211,6 +211,16 @@ export function FriendsList({ onChallengeToGame }: FriendsListProps) {
                   </div>
                 </div>
                 <div className="flex gap-2">
+                  {onChallengeToGame && (
+                    <Button
+                      size="sm"
+                      onClick={() => onChallengeToGame(friend.uid)}
+                      className="bg-blue-600 hover:bg-blue-700 text-white opacity-75 hover:opacity-100"
+                      title="Challenge to game"
+                    >
+                      <Gamepad2 className="h-4 w-4" />
+                    </Button>
+                  )}
                   <Button
                     size="sm"
                     variant="outline"
