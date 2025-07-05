@@ -15,9 +15,9 @@ import {
 } from 'firebase/firestore';
 import { getFirebaseDb } from '@/lib/firebase';
 import { GameRecord, BoardStateSnapshot, GameMove, COLLECTIONS } from '@/types/firestore';
-import { convertToFirestoreBoard, convertMoveToFirestore, validateGameState } from '@/lib/gameState';
-import { Piece, PieceColor } from '@/lib/checkers/types';
-import { makeMove, checkForWinner } from '@/lib/checkers/rules';
+import { convertToFirestoreBoard, convertMoveToFirestore, validateGameState, hasValidMoves, countPieces, determineWinner, generateMoveNotation } from '@/lib/gameState';
+import { Piece, PieceColor, Position } from '@/lib/checkers/types';
+import { makeMove, checkForWinner, getValidMoves, getAllValidMovesForPlayer, getCapturePositions } from '@/lib/checkers/rules';
 
 class OnlineGameService {
   private gameListeners: Map<string, () => void> = new Map();
@@ -69,7 +69,126 @@ class OnlineGameService {
   }
   
   /**
-   * Make a move in an online game
+   * Validate a move before execution
+   */
+  private validateMoveRequest(
+    gameData: GameRecord,
+    move: { from: Position; to: Position },
+    currentUserId: string
+  ): {
+    isValid: boolean;
+    userColor: PieceColor;
+    pieceToMove: Piece | null;
+    localPieces: Piece[];
+    error?: string;
+  } {
+    // Basic game state validation
+    if (gameData.status !== 'active') {
+      return { isValid: false, userColor: 'red', pieceToMove: null, localPieces: [], error: 'Game is not active' };
+    }
+    
+    // Validate board state integrity
+    if (!validateGameState(gameData.boardState)) {
+      return { isValid: false, userColor: 'red', pieceToMove: null, localPieces: [], error: 'Invalid board state' };
+    }
+    
+    // Determine user color and validate turn
+    const userColor = gameData.playerRed.uid === currentUserId ? 'red' : 'blue';
+    if (gameData.currentTurn !== userColor) {
+      return { isValid: false, userColor, pieceToMove: null, localPieces: [], error: 'Not your turn' };
+    }
+    
+    // Convert board state to local format
+    const localPieces = gameData.boardState.pieces.map(p => ({
+      id: p.id,
+      color: p.color as PieceColor,
+      type: p.type,
+      position: { row: p.position[0], col: p.position[1] },
+      isSelected: false
+    }));
+    
+    // Validate position boundaries
+    if (move.from.row < 0 || move.from.row >= 8 || move.from.col < 0 || move.from.col >= 8 ||
+        move.to.row < 0 || move.to.row >= 8 || move.to.col < 0 || move.to.col >= 8) {
+      return { isValid: false, userColor, pieceToMove: null, localPieces, error: 'Move out of bounds' };
+    }
+    
+    // Find the piece to move
+    const pieceToMove = localPieces.find(p => 
+      p.position.row === move.from.row && p.position.col === move.from.col
+    );
+    
+    if (!pieceToMove) {
+      return { isValid: false, userColor, pieceToMove: null, localPieces, error: 'No piece at source position' };
+    }
+    
+    if (pieceToMove.color !== userColor) {
+      return { isValid: false, userColor, pieceToMove, localPieces, error: 'Cannot move opponent\'s piece' };
+    }
+    
+    // Validate move using game rules - check if the move is in the piece's valid moves
+    const pieceValidMoves = getValidMoves(pieceToMove, localPieces);
+    const isMoveValid = pieceValidMoves.some(validMove => 
+      validMove.row === move.to.row && validMove.col === move.to.col
+    );
+    
+    if (!isMoveValid) {
+      return { isValid: false, userColor, pieceToMove, localPieces, error: 'Invalid move according to game rules' };
+    }
+    
+    // Check if there are mandatory captures that must be taken instead
+    const captureMoves = getCapturePositions(pieceToMove, localPieces);
+    const allPlayerMoves = getAllValidMovesForPlayer(localPieces, userColor);
+    const hasCaptures = allPlayerMoves.some(playerMove => 
+      getCapturePositions(playerMove.piece, localPieces).length > 0
+    );
+    
+    if (hasCaptures && captureMoves.length === 0) {
+      // If other pieces can capture, this piece cannot make non-capture moves
+      return { isValid: false, userColor, pieceToMove, localPieces, error: 'Must capture when capture is available' };
+    }
+    
+    return { isValid: true, userColor, pieceToMove, localPieces };
+  }
+  
+  /**
+   * Calculate game end conditions
+   */
+  private calculateGameEnd(pieces: Piece[], currentPlayer: PieceColor): {
+    isGameOver: boolean;
+    winner: 'red' | 'blue' | 'draw' | null;
+    endReason: 'all_pieces_captured' | 'no_valid_moves' | 'insufficient_material' | '';
+  } {
+    // Check for pieces remaining
+    const redPieces = pieces.filter(p => p.color === 'red').length;
+    const bluePieces = pieces.filter(p => p.color === 'blue').length;
+    
+    if (redPieces === 0) {
+      return { isGameOver: true, winner: 'blue', endReason: 'all_pieces_captured' };
+    }
+    
+    if (bluePieces === 0) {
+      return { isGameOver: true, winner: 'red', endReason: 'all_pieces_captured' };
+    }
+    
+    // Check for valid moves using existing rules
+    const playerMoves = getAllValidMovesForPlayer(pieces, currentPlayer);
+    if (playerMoves.length === 0) {
+      const opponentColor = currentPlayer === 'red' ? 'blue' : 'red';
+      return { isGameOver: true, winner: opponentColor, endReason: 'no_valid_moves' };
+    }
+    
+    // Check for draw conditions (could be expanded)
+    if (redPieces === 1 && bluePieces === 1) {
+      // King vs King - potential draw
+      return { isGameOver: true, winner: 'draw', endReason: 'insufficient_material' };
+    }
+    
+    return { isGameOver: false, winner: null, endReason: '' };
+  }
+  
+  /**
+   * Make a move in an online game with comprehensive validation
    */
   async makeMove(
     gameId: string, 
@@ -82,7 +201,7 @@ class OnlineGameService {
       const firebaseDb = await getFirebaseDb();
       const gameRef = doc(firebaseDb, COLLECTIONS.GAMES, gameId);
       
-      // Use a transaction to ensure atomic updates
+      // Use a transaction to ensure atomic updates with comprehensive validation
       const success = await runTransaction(firebaseDb, async (transaction) => {
         const gameDoc = await transaction.get(gameRef);
         
@@ -92,86 +211,103 @@ class OnlineGameService {
         
         const gameData = gameDoc.data() as GameRecord;
         
-        // Validate the move is allowed
-        if (gameData.status !== 'active') {
-          throw new Error('Game is not active');
+        // Comprehensive move validation
+        const validation = this.validateMoveRequest(gameData, move, currentUserId);
+        
+        if (!validation.isValid) {
+          throw new Error(validation.error || 'Invalid move');
         }
         
-        // Check if it's the current user's turn
-        const userColor = gameData.playerRed.uid === currentUserId ? 'red' : 'blue';
-        if (gameData.currentTurn !== userColor) {
-          throw new Error('Not your turn');
-        }
+        const { userColor, pieceToMove, localPieces } = validation;
         
-        // Convert Firestore board to local format for validation
-        const localPieces = gameData.boardState.pieces.map(p => ({
-          id: p.id,
-          color: p.color,
-          type: p.type,
-          position: { row: p.position[0], col: p.position[1] },
-          isSelected: false
-        }));
-        
-        // Find the piece to move
-        const pieceToMove = localPieces.find(p => 
-          p.position.row === move.from.row && p.position.col === move.from.col
-        );
-        
-        if (!pieceToMove) {
-          throw new Error('No piece at source position');
-        }
-        
-        if (pieceToMove.color !== userColor) {
-          throw new Error('Cannot move opponent\'s piece');
-        }
-        
-        // Validate and execute the move using game rules
-        const moveResult = makeMove(localPieces, pieceToMove, move.to);
+        // Execute the move using game rules
+        const moveResult = makeMove(localPieces, pieceToMove!, move.to);
         
         if (!moveResult) {
-          throw new Error('Invalid move');
+          throw new Error('Move execution failed');
         }
         
         const updatedPieces = moveResult.newPieces;
+        const nextPlayer = userColor === 'red' ? 'blue' : 'red';
         
-        // Create new board state
-        const newBoardState = convertToFirestoreBoard(updatedPieces, userColor === 'red' ? 'blue' : 'red');
+        // Create new board state with validation
+        const newBoardState = convertToFirestoreBoard(updatedPieces, nextPlayer);
         
-        // Create move record
-        const moveRecord: Omit<GameMove, 'timestamp'> = convertMoveToFirestore(
-          { from: move.from, to: move.to, capturedPiece: moveResult.capturedPiece },
-          userColor,
-          gameData.moveHistory.length + 1,
-          1000, // Placeholder time spent
-          newBoardState
-        );
+        // Additional board state validation
+        if (!validateGameState(newBoardState)) {
+          throw new Error('Generated board state is invalid');
+        }
         
-        // Check for game end conditions
-        const winner = checkForWinner(updatedPieces);
-        const isGameComplete = winner !== null;
+        // Generate move notation
+        const moveNotation = generateMoveNotation({ 
+          from: move.from, 
+          to: move.to, 
+          capturedPiece: moveResult.capturedPiece 
+        });
         
-        // Update game document
+        // Create move record with proper timing
+        const moveStartTime = gameData.lastMoveAt ? 
+          (gameData.lastMoveAt instanceof Date ? gameData.lastMoveAt : gameData.lastMoveAt.toDate()) : 
+          new Date();
+        const timeSpent = Math.max(1000, Date.now() - moveStartTime.getTime()); // Minimum 1 second
+        
+        const moveRecord: Omit<GameMove, 'timestamp'> = {
+          moveNumber: gameData.totalMoves + 1,
+          player: userColor,
+          from: [move.from.row, move.from.col],
+          to: [move.to.row, move.to.col],
+          captures: moveResult.capturedPiece ? [[moveResult.capturedPiece.position.row, moveResult.capturedPiece.position.col]] : undefined,
+          promotedToKing: moveResult.becameKing || false,
+          timeSpent,
+          boardStateAfter: newBoardState.gameStateHash,
+          isValid: true,
+          moveNotation
+        };
+        
+        // Calculate game end conditions
+        const gameEnd = this.calculateGameEnd(updatedPieces, nextPlayer);
+        
+        // Prepare update data
         const updateData: Partial<GameRecord> = {
           boardState: newBoardState,
-          currentTurn: userColor === 'red' ? 'blue' : 'red',
+          currentTurn: nextPlayer,
           moveHistory: [...gameData.moveHistory, { ...moveRecord, timestamp: serverTimestamp() as Timestamp }],
           lastMoveAt: serverTimestamp() as Timestamp,
           totalMoves: gameData.totalMoves + 1
         };
         
-        if (isGameComplete) {
+        // Handle game completion
+        if (gameEnd.isGameOver) {
           updateData.status = 'completed';
-          updateData.winner = winner === 'red' ? 'red' : winner === 'blue' ? 'blue' : 'draw';
+          updateData.winner = gameEnd.winner || undefined;
           updateData.completedAt = serverTimestamp() as Timestamp;
-          updateData.endReason = 'checkmate'; // Could be expanded to handle different end reasons
+          
+          // Map internal end reasons to valid GameRecord end reasons
+          if (gameEnd.endReason === 'all_pieces_captured' || gameEnd.endReason === 'no_valid_moves') {
+            updateData.endReason = 'checkmate';
+          } else if (gameEnd.endReason === 'insufficient_material') {
+            updateData.endReason = 'draw';
+          }
+          
+          console.log('Game completed:', { 
+            winner: gameEnd.winner, 
+            reason: updateData.endReason 
+          });
         }
         
+        // Apply atomic update
         transaction.update(gameRef, updateData);
+        
+        console.log('Move transaction completed successfully:', {
+          moveNumber: moveRecord.moveNumber,
+          player: userColor,
+          notation: moveNotation,
+          gameOver: gameEnd.isGameOver
+        });
         
         return true;
       });
       
-      console.log('Move completed successfully');
       return success;
     } catch (error) {
       console.error('Error making move:', error);
