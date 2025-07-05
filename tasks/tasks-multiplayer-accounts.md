@@ -112,7 +112,7 @@ Based on `prd-multiplayer-accounts.md` and `tdd-multiplayer-accounts.md`
 - [ ] 6.0 Online Multiplayer Game Implementation
   - [x] 6.1 Create Firestore game document structure with board state and move history
   - [x] 6.2 Extend existing Board component for online multiplayer support
-  - [ ] 6.3 Implement real-time game state synchronization using Firestore listeners
+  - [x] 6.3 Implement real-time game state synchronization using Firestore listeners
   - [ ] 6.4 Add move validation with Firestore transactions for atomic updates
   - [ ] 6.5 Create turn management system with clear turn indicators
   - [ ] 6.6 Implement player disconnection handling and timeout detection
