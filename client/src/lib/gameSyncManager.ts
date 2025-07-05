@@ -3,6 +3,8 @@ import { getFirebaseDb } from '@/lib/firebase';
 import { GameRecord, BoardStateSnapshot, COLLECTIONS } from '@/types/firestore';
 import { useOnlineGameStore } from '@/lib/stores/useOnlineGameStore';
 import { validateGameState } from '@/lib/gameState';
+import { connectionService } from '@/services/connectionService';
+import { timeoutService } from '@/services/timeoutService';
 
 export interface SyncManagerOptions {
   gameId: string;
@@ -54,6 +56,17 @@ class GameSyncManager {
     try {
       console.log('Starting game synchronization for:', this.gameId);
       
+      // Start connection tracking
+      await connectionService.startPresence(this.gameId, this.userId);
+      
+      // Start timeout tracking
+      timeoutService.startTimeoutTracking(this.gameId, {
+        moveTimeout: 300000, // 5 minutes per move
+        totalGameTimeout: 1800000, // 30 minutes total
+        reconnectionGracePeriod: 120000, // 2 minutes
+        warningThreshold: 60000 // Warning at 1 minute remaining
+      });
+      
       // Set up Firestore listener
       await this.setupGameListener();
       
@@ -77,6 +90,12 @@ class GameSyncManager {
     console.log('Stopping game synchronization for:', this.gameId);
     
     this.isDestroyed = true;
+    
+    // Stop connection tracking
+    connectionService.stopPresence(this.gameId, this.userId);
+    
+    // Stop timeout tracking
+    timeoutService.stopTimeoutTracking(this.gameId);
     
     // Clean up listeners
     if (this.gameUnsubscribe) {

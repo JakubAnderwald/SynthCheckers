@@ -115,7 +115,7 @@ Based on `prd-multiplayer-accounts.md` and `tdd-multiplayer-accounts.md`
   - [x] 6.3 Implement real-time game state synchronization using Firestore listeners
   - [x] 6.4 Add move validation with Firestore transactions for atomic updates
   - [x] 6.5 Create turn management system with clear turn indicators
-  - [ ] 6.6 Implement player disconnection handling and timeout detection
+  - [x] 6.6 Implement player disconnection handling and timeout detection
   - [ ] 6.7 Add game completion workflow with ELO rating updates
   - [ ] 6.8 Create online game store for state management with Zustand
   - [ ] 6.9 Implement move history tracking in Firestore subcollection

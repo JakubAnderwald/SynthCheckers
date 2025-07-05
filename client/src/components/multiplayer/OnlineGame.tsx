@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import OnlineBoard from '@/components/game/OnlineBoard';
 import { TurnManagement } from '@/components/multiplayer/TurnManagement';
+import { DisconnectionManager } from '@/components/multiplayer/DisconnectionManager';
 import { useOnlineGameStore } from '@/lib/stores/useOnlineGameStore';
 import { useGameSync } from '@/hooks/useGameSync';
 import { useAuth } from '@/contexts/AuthContext';
@@ -213,6 +214,19 @@ export function OnlineGame() {
             <div className="space-y-6">
               {/* Turn Management */}
               <TurnManagement />
+              
+              {/* Disconnection Manager */}
+              {gameId && user && (
+                <DisconnectionManager 
+                  gameId={gameId} 
+                  userId={user.uid}
+                  onReconnect={handleReconnect}
+                  onAbandoned={() => {
+                    console.log('Game abandoned');
+                    // Could navigate to results or main menu
+                  }}
+                />
+              )}
               
               {/* Game Board */}
               {currentGame && <OnlineBoard gameRecord={currentGame} />}
