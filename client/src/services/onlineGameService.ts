@@ -18,6 +18,7 @@ import { GameRecord, BoardStateSnapshot, GameMove, COLLECTIONS } from '@/types/f
 import { convertToFirestoreBoard, convertMoveToFirestore, validateGameState, hasValidMoves, countPieces, determineWinner, generateMoveNotation } from '@/lib/gameState';
 import { Piece, PieceColor, Position } from '@/lib/checkers/types';
 import { makeMove, checkForWinner, getValidMoves, getAllValidMovesForPlayer, getCapturePositions } from '@/lib/checkers/rules';
+import { eloService, GameCompletionData } from '@/services/eloService';
 
 class OnlineGameService {
   private gameListeners: Map<string, () => void> = new Map();
@@ -202,6 +203,7 @@ class OnlineGameService {
       const gameRef = doc(firebaseDb, COLLECTIONS.GAMES, gameId);
       
       // Use a transaction to ensure atomic updates with comprehensive validation
+      let gameEndResult: any = null;
       const success = await runTransaction(firebaseDb, async (transaction) => {
         const gameDoc = await transaction.get(gameRef);
         
@@ -305,8 +307,24 @@ class OnlineGameService {
           gameOver: gameEnd.isGameOver
         });
         
+        // Store game end state for ELO processing after transaction
+        gameEndResult = { gameEnd, updatedGameData: { ...gameData, ...updateData } };
         return true;
       });
+      
+      // Process ELO after transaction if game ended
+      if (gameEndResult && gameEndResult.gameEnd.isGameOver) {
+        try {
+          await this.handleGameCompletion(
+            gameEndResult.updatedGameData as GameRecord, 
+            gameEndResult.gameEnd.winner!, 
+            gameEndResult.gameEnd.endReason as any
+          );
+        } catch (error) {
+          console.error('Failed to process ELO after game completion:', error);
+          // Don't fail the entire move operation
+        }
+      }
       
       return success;
     } catch (error) {
@@ -335,6 +353,45 @@ class OnlineGameService {
     }
   }
   
+  /**
+   * Handle game completion with ELO processing
+   */
+  private async handleGameCompletion(
+    gameData: GameRecord, 
+    winner: 'red' | 'blue' | 'draw', 
+    endReason: 'all_pieces_captured' | 'no_valid_moves' | 'resignation' | 'timeout' | 'abandonment'
+  ): Promise<void> {
+    try {
+      // Calculate performance stats
+      const performanceStats = eloService.calculatePerformanceStats(gameData);
+      
+      // Calculate game duration
+      const startTime = gameData.startedAt?.toDate?.() || gameData.createdAt.toDate();
+      const gameDuration = Date.now() - startTime.getTime();
+
+      const completionData: GameCompletionData = {
+        gameId: gameData.gameId,
+        winner,
+        endReason: endReason as any,
+        totalMoves: gameData.totalMoves,
+        gameDuration,
+        playerPerformance: performanceStats
+      };
+
+      // Process ELO changes and update game/player records
+      await eloService.processGameCompletion(gameData, completionData);
+      
+      console.log('Game completion processed:', {
+        gameId: gameData.gameId,
+        winner,
+        endReason
+      });
+    } catch (error) {
+      console.error('Failed to process game completion:', error);
+      // Don't re-throw to avoid blocking the game flow
+    }
+  }
+
   /**
    * Resign from a game
    */
