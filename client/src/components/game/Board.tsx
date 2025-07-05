@@ -5,10 +5,45 @@ import * as THREE from 'three';
 import { useCheckersStore } from '@/lib/stores/useCheckersStore';
 import { colors } from '@/lib/theme/colors';
 import { BOARD_SIZE } from '@/lib/checkers/rules';
+import { GameRecord } from '@/types/firestore';
 import Square from './Square';
 import Piece from './Piece';
+import OnlineBoard from './OnlineBoard';
 
-const Board: React.FC = () => {
+interface BoardProps {
+  mode?: 'offline' | 'online';
+  gameRecord?: GameRecord;
+  onMoveAttempt?: (move: { from: { row: number; col: number }; to: { row: number; col: number } }) => void;
+  onPieceSelect?: (pieceId: string) => void;
+  isPlayerTurn?: boolean;
+  playerColor?: 'red' | 'blue';
+  readOnly?: boolean;
+}
+
+const Board: React.FC<BoardProps> = ({
+  mode = 'offline',
+  gameRecord,
+  onMoveAttempt,
+  onPieceSelect,
+  isPlayerTurn,
+  playerColor,
+  readOnly = false
+}) => {
+  // If online mode and gameRecord is provided, use OnlineBoard
+  if (mode === 'online' && gameRecord) {
+    return (
+      <OnlineBoard
+        gameRecord={gameRecord}
+        onMoveAttempt={onMoveAttempt}
+        onPieceSelect={onPieceSelect}
+        isPlayerTurn={isPlayerTurn}
+        playerColor={playerColor}
+        readOnly={readOnly}
+      />
+    );
+  }
+
+  // Continue with offline board implementation
   const boardRef = useRef<THREE.Group>(null);
   const [hoveredSquare, setHoveredSquare] = useState<{row: number, col: number} | null>(null);
   
