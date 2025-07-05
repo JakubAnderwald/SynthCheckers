@@ -4,6 +4,7 @@ import { useAudio } from '@/lib/stores/useAudio';
 import { colors } from '@/lib/theme/colors';
 import { useIsMobile } from '@/hooks/use-is-mobile';
 import { MultiplayerPage } from '@/components/multiplayer/MultiplayerPage';
+import { PlayerRatings } from '@/components/profile/PlayerRatings';
 
 const MainMenu: React.FC = () => {
   const initGame = useCheckersStore(state => state.initGame);
@@ -11,6 +12,7 @@ const MainMenu: React.FC = () => {
   const { toggleMute, isMuted } = useAudio();
   const isMobile = useIsMobile();
   const [showMultiplayer, setShowMultiplayer] = useState(false);
+  const [showRatings, setShowRatings] = useState(false);
   
   // Background grid effect for the menu
   const gridStyle = {
@@ -29,6 +31,10 @@ const MainMenu: React.FC = () => {
       console.log('Starting multiplayer game:', gameId);
       // Handle game start - integrate with existing game system
     }} />;
+  }
+
+  if (showRatings) {
+    return <PlayerRatings onBack={() => setShowRatings(false)} />;
   }
 
   return (
@@ -92,6 +98,15 @@ const MainMenu: React.FC = () => {
             Multiplayer
           </button>
           
+          <button
+            onClick={() => setShowRatings(true)}
+            className="w-full py-2 sm:py-3 px-4 sm:px-6 text-base sm:text-lg font-medium rounded-md bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-600 hover:to-amber-600 text-white transition-all duration-200 transform hover:scale-105"
+            style={{ 
+              boxShadow: `0 0 10px #eab308, 0 0 5px #eab308`,
+            }}
+          >
+            View Ratings
+          </button>
 
           <button
             onClick={toggleSettings}
