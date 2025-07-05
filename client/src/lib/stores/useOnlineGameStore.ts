@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
-import { GameRecord, BoardStateSnapshot, GameMove } from '@/types/firestore';
+import { GameRecord, BoardStateSnapshot, GameMove, TimeControl } from '@/types/firestore';
 import { PieceColor } from '@/lib/checkers/types';
 
 interface OnlineGameState {
@@ -60,6 +60,11 @@ interface OnlineGameState {
   setShowReconnectingDialog: (show: boolean) => void;
   setShowMoveAnimation: (show: boolean) => void;
   setError: (error: string | null) => void;
+  
+  // Timer actions
+  startPlayerTimers: (timeControl?: TimeControl) => void;
+  stopPlayerTimers: () => void;
+  updatePlayerTimer: (color: PieceColor, timeMs: number) => void;
   
   // Game logic actions
   canMakeMove: () => boolean;
@@ -166,6 +171,54 @@ export const useOnlineGameStore = create<OnlineGameState>()(
           [color]: timeRemaining
         }
       }));
+    },
+
+    // Enhanced timer management
+    startPlayerTimers: (timeControl) => {
+      const state = get();
+      if (state.timerInterval) {
+        clearInterval(state.timerInterval);
+      }
+      
+      const defaultTime = timeControl ? timeControl.initialTime * 60 * 1000 : 10 * 60 * 1000;
+      
+      set({
+        playerTimers: { red: defaultTime, blue: defaultTime },
+        timerInterval: setInterval(() => {
+          const currentState = get();
+          if (!currentState.currentGame || currentState.currentGame.status !== 'active') return;
+          
+          const activePlayer = currentState.currentGame.currentTurn;
+          const currentTime = currentState.playerTimers[activePlayer];
+          
+          if (currentTime > 0) {
+            set({
+              playerTimers: {
+                ...currentState.playerTimers,
+                [activePlayer]: currentTime - 1000
+              }
+            });
+          }
+        }, 1000)
+      });
+    },
+    
+    stopPlayerTimers: () => {
+      const state = get();
+      if (state.timerInterval) {
+        clearInterval(state.timerInterval);
+        set({ timerInterval: null });
+      }
+    },
+    
+    updatePlayerTimer: (color, timeMs) => {
+      const state = get();
+      set({
+        playerTimers: {
+          ...state.playerTimers,
+          [color]: timeMs
+        }
+      });
     },
     
     // Move history management
