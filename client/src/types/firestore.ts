@@ -62,6 +62,61 @@ export interface PrivacySettings {
   allowFriendRequests: boolean;
 }
 
+// Enhanced Game Board State Structure
+export interface BoardStateSnapshot {
+  pieces: PieceState[];
+  currentPlayer: 'red' | 'blue';
+  mustCapture: boolean;
+  kingPromotions: KingPromotion[];
+  gameStateHash: string; // For validation and sync
+  timestamp: Timestamp;
+}
+
+export interface PieceState {
+  id: string;
+  color: 'red' | 'blue';
+  type: 'normal' | 'king';
+  position: [number, number]; // [row, col]
+  canMove: boolean;
+  threatLevel: number; // AI evaluation metric
+}
+
+export interface KingPromotion {
+  pieceId: string;
+  position: [number, number];
+  moveNumber: number;
+  timestamp: Timestamp;
+}
+
+// Game Rules Configuration
+export interface GameRules {
+  boardSize: number;
+  forcedCapture: boolean;
+  flyingKings: boolean;
+  multipleJumps: boolean;
+  backwardCaptures: boolean;
+  drawAfterMoves: number; // Number of moves without capture before draw
+}
+
+// Reconnection and Synchronization
+export interface ReconnectionData {
+  lastKnownMoveNumber: number;
+  playerTimestamps: {
+    red: Timestamp;
+    blue: Timestamp;
+  };
+  disconnectionEvents: DisconnectionEvent[];
+  syncAttempts: number;
+}
+
+export interface DisconnectionEvent {
+  playerId: string;
+  timestamp: Timestamp;
+  reason: 'network' | 'timeout' | 'manual';
+  duration: number; // milliseconds
+  recovered: boolean;
+}
+
 // Game Document Structure
 export interface GameRecord {
   gameId: string;
@@ -74,7 +129,10 @@ export interface GameRecord {
   status: 'waiting' | 'active' | 'completed' | 'abandoned';
   currentTurn: 'red' | 'blue';
   moveHistory: GameMove[];
-  boardState: string; // Serialized board state
+  boardState: BoardStateSnapshot; // Detailed board state
+  
+  // Game Rules & Configuration
+  gameRules: GameRules;
   
   // Timing
   createdAt: Timestamp;
@@ -95,6 +153,11 @@ export interface GameRecord {
   // Game Type
   gameType: 'ranked' | 'casual' | 'practice';
   timeControl?: TimeControl;
+  
+  // Game Metadata
+  totalMoves: number;
+  gameSession: string; // Unique session identifier
+  reconnectionData?: ReconnectionData;
 }
 
 export interface GamePlayer {
@@ -115,6 +178,9 @@ export interface GameMove {
   promotedToKing?: boolean;
   timestamp: Timestamp;
   timeSpent: number; // milliseconds
+  boardStateAfter: string; // Serialized board state hash for validation
+  isValid: boolean;
+  moveNotation: string; // Human-readable move notation
 }
 
 export interface TimeControl {
@@ -219,11 +285,13 @@ export interface GameTypeStats {
 export const COLLECTIONS = {
   USERS: 'users',
   GAMES: 'games',
+  GAME_MOVES: 'gameMoves', // Subcollection of games
   FRIENDSHIPS: 'friendships',
   FRIEND_REQUESTS: 'friendRequests',
-  CHALLENGES: 'challenges',
+  CHALLENGES: 'gameChallenges',
   LEADERBOARD: 'leaderboard',
   USER_STATISTICS: 'userStatistics',
+  GAME_SESSIONS: 'gameSessions', // For active game tracking
 } as const;
 
 // ELO Rating Constants

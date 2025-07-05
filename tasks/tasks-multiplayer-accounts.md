@@ -110,7 +110,7 @@ Based on `prd-multiplayer-accounts.md` and `tdd-multiplayer-accounts.md`
   - [x] 5.9 Write unit tests for matchmaking algorithms and invitation logic
 
 - [ ] 6.0 Online Multiplayer Game Implementation
-  - [ ] 6.1 Create Firestore game document structure with board state and move history
+  - [x] 6.1 Create Firestore game document structure with board state and move history
   - [ ] 6.2 Extend existing Board component for online multiplayer support
   - [ ] 6.3 Implement real-time game state synchronization using Firestore listeners
   - [ ] 6.4 Add move validation with Firestore transactions for atomic updates
