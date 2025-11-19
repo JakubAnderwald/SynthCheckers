@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Neon Tetris - Synthwave Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon-pink: #ff00ff;
+            --neon-blue: #00ffff;
+            --neon-purple: #bc13fe;
+            --bg-dark: #0b0216;
+            --grid-color: rgba(188, 19, 254, 0.2);
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: white;
+            font-family: 'Press Start 2P', cursive;
+            overflow: hidden;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Synthwave Background - Perspective Grid */
+        .synthwave-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, #000000 0%, #180c2e 100%);
+            z-index: -2;
+            overflow: hidden;
+        }
+
+        .grid-floor {
+            position: absolute;
+            bottom: -50%;
+            left: -50%;
+            width: 200%;
+            height: 100%;
+            background-image: 
+                linear-gradient(var(--grid-color) 2px, transparent 2px),
+                linear-gradient(90deg, var(--grid-color) 2px, transparent 2px);
+            background-size: 40px 40px;
+            transform: perspective(500px) rotateX(60deg);
+            animation: grid-move 20s linear infinite;
+            opacity: 0.5;
+            box-shadow: 0 0 100px var(--neon-purple);
+        }
+
+        @keyframes grid-move {
+            0% { transform: perspective(500px) rotateX(60deg) translateY(0); }
+            100% { transform: perspective(500px) rotateX(60deg) translateY(40px); }
+        }
+
+        .sun {
+            position: absolute;
+            bottom: 30%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px;
+            height: 300px;
+            background: linear-gradient(to top, #ff00aa, #ffcc00);
+            border-radius: 50%;
+            box-shadow: 0 0 40px #ff00aa;
+            z-index: -1;
+            clip-path: polygon(0% 0%, 100% 0%, 100% 60%, 0% 60%);
+        }
+
+        /* CRT Effect (Scanlines) */
+        .crt-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        /* Game Container */
+        .game-container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border: 4px solid var(--neon-blue);
+            box-shadow: 0 0 20px var(--neon-blue), inset 0 0 20px var(--neon-blue);
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 10px;
+        }
+
+        canvas {
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            background-color: rgba(0, 0, 0, 0.9);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
+        }
+
+        .ui-panel {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px var(--neon-purple);
+            align-items: flex-end;
+        }
+
+        .neon-text {
+            color: white;
+            text-shadow: 
+                0 0 5px #fff,
+                0 0 10px #fff,
+                0 0 20px var(--neon-pink),
+                0 0 30px var(--neon-pink);
+        }
+
+        .controls-overlay {
+            margin-top: 20px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            width: 100%;
+            max-width: 300px;
+        }
+        
+        /* Hide controls on desktop, show on mobile */
+        @media (min-width: 768px) {
+            .controls-overlay { display: none; }
+        }
+
+        .btn-control {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid var(--neon-purple);
+            color: var(--neon-purple);
+            padding: 15px;
+            border-radius: 5px;
+            font-family: inherit;
+            cursor: pointer;
+            touch-action: manipulation;
+            box-shadow: 0 0 10px var(--neon-purple);
+            transition: transform 0.1s;
+            text-align: center;
+            user-select: none;
+        }
+
+        .btn-control:active {
+            transform: scale(0.95);
+            background: var(--neon-purple);
+            color: white;
+        }
+
+        .btn-big {
+            background: var(--neon-blue);
+            color: black;
+            border: none;
+            padding: 10px 20px;
+            font-family: inherit;
+            cursor: pointer;
+            box-shadow: 0 0 15px var(--neon-blue);
+            margin-top: 10px;
+        }
+        
+        .btn-big:hover {
+            background: white;
+        }
+
+        /* Sound button */
+        .sound-btn {
+            background: transparent;
+            border: 1px solid var(--neon-pink);
+            color: var(--neon-pink);
+            padding: 5px 10px;
+            font-size: 0.6em;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        .sound-btn.muted {
+            color: gray;
+            border-color: gray;
+            text-decoration: line-through;
+        }
+
+        #gameOverModal {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.95);
+            border: 4px solid var(--neon-pink);
+            padding: 20px;
+            text-align: center;
+            display: none;
+            z-index: 50;
+            box-shadow: 0 0 50px var(--neon-pink);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Background -->
+    <div class="synthwave-bg">
+        <div class="sun"></div>
+        <div class="grid-floor"></div>
+    </div>
+    <div class="crt-overlay"></div>
+
+    <!-- Main Game Container -->
+    <div class="game-container">
+        <div class="ui-panel">
+            <div>
+                <div style="font-size: 0.8em; color: var(--neon-blue);">SCORE</div>
+                <div id="score">0</div>
+            </div>
+            <div style="text-align: right;">
+                <div style="font-size: 0.8em; color: var(--neon-blue);">LINES</div>
+                <div id="lines">0</div>
+            </div>
+            <button id="soundToggle" class="sound-btn" onclick="toggleSound()">🔊</button>
+        </div>
+
+        <canvas id="tetris" width="240" height="400"></canvas>
+
+        <!-- Start/Reset Button -->
+        <button id="startBtn" class="btn-big" onclick="resetGame()">START</button>
+
+        <!-- Mobile Controls -->
+        <div class="controls-overlay">
+            <div class="btn-control" onclick="playerMove(-1)">◀</div>
+            <div class="btn-control" onclick="playerRotate()">↻</div>
+            <div class="btn-control" onclick="playerMove(1)">▶</div>
+            <div class="btn-control" style="grid-column: 1/-1;" onmousedown="accelerate(true)" onmouseup="accelerate(false)" ontouchstart="accelerate(true)" ontouchend="accelerate(false)">▼ FAST ▼</div>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div id="gameOverModal">
+            <h1 class="neon-text" style="margin-bottom: 20px;">GAME OVER</h1>
+            <p style="margin-bottom: 20px;">SCORE: <span id="finalScore">0</span></p>
+            <button class="btn-big" onclick="resetGame()">PLAY AGAIN</button>
+        </div>
+    </div>
+
+<script>
+    // --- AUDIO SYSTEM (Web Audio API) ---
+    const soundSystem = {
+        ctx: null,
+        masterGain: null,
+        isMuted: false,
+        musicTimer: null,
+        step: 0,
+        noiseBuffer: null,
+        
+        init: function() {
+            if (!this.ctx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                this.ctx = new AudioContext();
+                this.masterGain = this.ctx.createGain();
+                this.masterGain.gain.value = 0.25; // Master volume
+                this.masterGain.connect(this.ctx.destination);
+                
+                // Pre-generate noise buffer for drums
+                const bufferSize = this.ctx.sampleRate * 2; // 2 seconds
+                this.noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                const data = this.noiseBuffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = Math.random() * 2 - 1;
+                }
+            }
+            if (this.ctx.state === 'suspended') {
+                this.ctx.resume();
+            }
+        },
+
+        playTone: function(freq, type, duration, volume = 0.1, slide = 0, delay = 0) {
+            if (this.isMuted || !this.ctx) return;
+            
+            const t = this.ctx.currentTime + delay;
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, t);
+            if (slide !== 0) {
+                // Slide frequency for effects
+                osc.frequency.linearRampToValueAtTime(Math.max(freq + slide, 10), t + duration);
+            }
+
+            // Envelope (ADSR-like)
+            gain.gain.setValueAtTime(0, t);
+            gain.gain.linearRampToValueAtTime(volume, t + 0.02); // Attack
+            gain.gain.exponentialRampToValueAtTime(0.001, t + duration); // Decay
+
+            osc.connect(gain);
+            gain.connect(this.masterGain);
+            
+            osc.start(t);
+            osc.stop(t + duration);
+        },
+
+        playNoise: function(duration, volume = 0.1) {
+            if (this.isMuted || !this.ctx || !this.noiseBuffer) return;
+            
+            const src = this.ctx.createBufferSource();
+            src.buffer = this.noiseBuffer;
+            
+            const filter = this.ctx.createBiquadFilter();
+            filter.type = 'highpass';
+            filter.frequency.value = 1000; // Hi-hat style filter
+
+            const gain = this.ctx.createGain();
+            gain.gain.setValueAtTime(volume, this.ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
+
+            src.connect(filter);
+            filter.connect(gain);
+            gain.connect(this.masterGain);
+            
+            src.start();
+        },
+
+        playMusicStep: function() {
+            if (this.isMuted) return;
+            
+            // 32-step pattern (4 bars of 8th notes)
+            const s = this.step % 32; 
+
+            // --- DRUMS ---
+            // Kick: 4-on-the-floor (Beat 1, 2, 3, 4)
+            // In 8th note grid (0-7), beats are 0, 2, 4, 6
+            if (s % 2 === 0) { 
+                this.playTone(100, 'sine', 0.15, 0.5, -80); // Deep Kick
+            }
+            
+            // Snare: Beats 2 and 4
+            if (s % 8 === 4) { 
+                this.playNoise(0.15, 0.15); // Snare burst
+            }
+
+            // Hi-hat: Offbeats (1, 3, 5, 7)
+            if (s % 2 !== 0) {
+                this.playNoise(0.05, 0.04); // Closed Hat
+            }
+
+            // --- BASS (Rolling Octaves) ---
+            // Progression: Am - F - C - G
+            let note = 55; // A1
+            if (s >= 8 && s < 16) note = 43.65; // F1
+            else if (s >= 16 && s < 24) note = 65.41; // C2
+            else if (s >= 24 && s < 32) note = 49.00; // G1
+
+            // Octave jump on offbeat for "rolling" feel
+            if (s % 2 !== 0) note *= 2;
+            
+            this.playTone(note, 'sawtooth', 0.15, 0.18); // Driving bass
+
+            // --- LEAD MELODY ---
+            // Sparse melody on top (Square wave for retro feel)
+            const melodyMap = {
+                0: 440,  // A4
+                3: 523,  // C5 (syncopated)
+                6: 493,  // B4
+                10: 349, // F4
+                14: 440, // A4
+                16: 523, // C5
+                20: 659, // E5
+                22: 587, // D5
+                26: 392, // G4
+                30: 493  // B4
+            };
+
+            if (melodyMap[s]) {
+                this.playTone(melodyMap[s], 'square', 0.3, 0.12);
+                // Simple Delay/Echo effect
+                setTimeout(() => this.playTone(melodyMap[s], 'square', 0.3, 0.04), 200);
+            }
+
+            this.step++;
+        },
+
+        startMusic: function() {
+            if (this.musicTimer) clearInterval(this.musicTimer);
+            this.step = 0;
+            // 130 BPM approx 230ms per 8th note (Driving tempo)
+            this.musicTimer = setInterval(() => this.playMusicStep(), 230); 
+        },
+
+        stopMusic: function() {
+            if (this.musicTimer) clearInterval(this.musicTimer);
+        },
+
+        // SFX Wrappers
+        sfxMove: function() { this.playTone(400, 'triangle', 0.05, 0.05); },
+        sfxRotate: function() { this.playTone(600, 'square', 0.1, 0.05, 200); }, 
+        sfxDrop: function() { this.playTone(100, 'sawtooth', 0.2, 0.1, -50); },
+        sfxClear: function() { 
+            // Major arpeggio
+            this.playTone(523.25, 'square', 0.3, 0.1);
+            setTimeout(() => this.playTone(659.25, 'square', 0.3, 0.1), 50);
+            setTimeout(() => this.playTone(783.99, 'square', 0.4, 0.1), 100);
+        },
+        sfxGameOver: function() {
+            this.stopMusic();
+            this.playTone(100, 'sawtooth', 1.5, 0.3, -80); 
+        }
+    };
+
+    function toggleSound() {
+        soundSystem.isMuted = !soundSystem.isMuted;
+        const btn = document.getElementById('soundToggle');
+        if (soundSystem.isMuted) {
+            btn.classList.add('muted');
+            btn.innerText = '🔇';
+            soundSystem.stopMusic();
+        } else {
+            btn.classList.remove('muted');
+            btn.innerText = '🔊';
+            if (!isGameOver && !isPaused) soundSystem.startMusic();
+        }
+    }
+
+    // --- END AUDIO SYSTEM ---
+
+    const canvas = document.getElementById('tetris');
+    const context = canvas.getContext('2d');
+    
+    context.scale(20, 20);
+
+    const COLORS = [
+        null, '#FF0D72', '#0DC2FF', '#0DFF72', '#F538FF', '#FF8E0D', '#FFE138', '#3877FF',
+    ];
+
+    const PIECES = 'ILJOTSZ';
+    const SHAPES = {
+        'T': [[0, 1, 0], [1, 1, 1], [0, 0, 0]],
+        'I': [[0, 1, 0, 0], [0, 1, 0, 0], [0, 1, 0, 0], [0, 1, 0, 0]],
+        'L': [[0, 1, 0], [0, 1, 0], [0, 1, 1]],
+        'J': [[0, 1, 0], [0, 1, 0], [1, 1, 0]],
+        'O': [[1, 1], [1, 1]],
+        'S': [[0, 1, 1], [1, 1, 0], [0, 0, 0]],
+        'Z': [[1, 1, 0], [0, 1, 1], [0, 0, 0]]
+    };
+
+    const arena = createMatrix(12, 20);
+    const player = {
+        pos: {x: 0, y: 0},
+        matrix: null,
+        score: 0,
+        lines: 0,
+    };
+
+    let dropCounter = 0;
+    let dropInterval = 1000;
+    let lastTime = 0;
+    let isGameOver = false;
+    let isPaused = true;
+    let animationId = null;
+
+    function createMatrix(w, h) {
+        const matrix = [];
+        while (h--) {
+            matrix.push(new Array(w).fill(0));
+        }
+        return matrix;
+    }
+
+    function createPiece(type) {
+        return SHAPES[type];
+    }
+
+    function draw() {
+        context.fillStyle = '#0b0216';
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        drawMatrix(arena, {x: 0, y: 0});
+        drawMatrix(player.matrix, player.pos);
+    }
+
+    function drawMatrix(matrix, offset) {
+        if (!matrix) return;
+        matrix.forEach((row, y) => {
+            row.forEach((value, x) => {
+                if (value !== 0) {
+                    const color = COLORS[value];
+                    context.shadowBlur = 10;
+                    context.shadowColor = color;
+                    context.fillStyle = color;
+                    context.fillRect(x + offset.x, y + offset.y, 1, 1);
+                    context.shadowBlur = 0;
+                    context.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                    context.fillRect(x + offset.x + 0.1, y + offset.y + 0.1, 0.8, 0.8);
+                    context.fillStyle = 'rgba(255, 255, 255, 0.5)';
+                    context.fillRect(x + offset.x + 0.3, y + offset.y + 0.3, 0.4, 0.4);
+                }
+            });
+        });
+    }
+
+    function merge(arena, player) {
+        player.matrix.forEach((row, y) => {
+            row.forEach((value, x) => {
+                if (value !== 0) {
+                    arena[y + player.pos.y][x + player.pos.x] = value;
+                }
+            });
+        });
+    }
+
+    function rotate(matrix, dir) {
+        for (let y = 0; y < matrix.length; ++y) {
+            for (let x = 0; x < y; ++x) {
+                [matrix[x][y], matrix[y][x]] = [matrix[y][x], matrix[x][y]];
+            }
+        }
+        if (dir > 0) matrix.forEach(row => row.reverse());
+        else matrix.reverse();
+    }
+
+    function collide(arena, player) {
+        const m = player.matrix;
+        const o = player.pos;
+        for (let y = 0; y < m.length; ++y) {
+            for (let x = 0; x < m[y].length; ++x) {
+                if (m[y][x] !== 0 && (arena[y + o.y] && arena[y + o.y][x + o.x]) !== 0) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    function arenaSweep() {
+        let rowCount = 1;
+        let cleared = false;
+        outer: for (let y = arena.length - 1; y > 0; --y) {
+            for (let x = 0; x < arena[y].length; ++x) {
+                if (arena[y][x] === 0) {
+                    continue outer;
+                }
+            }
+
+            const row = arena.splice(y, 1)[0].fill(0);
+            arena.unshift(row);
+            ++y;
+
+            player.score += rowCount * 100;
+            player.lines += 1;
+            rowCount *= 2;
+            cleared = true;
+        }
+        
+        if (cleared) {
+            soundSystem.sfxClear(); // Sound effect
+            document.querySelector('.game-container').style.boxShadow = `0 0 50px #fff`;
+            setTimeout(() => {
+                document.querySelector('.game-container').style.boxShadow = `0 0 20px var(--neon-blue), inset 0 0 20px var(--neon-blue)`;
+            }, 100);
+        }
+        updateScore();
+    }
+
+    function updateScore() {
+        document.getElementById('score').innerText = player.score;
+        document.getElementById('lines').innerText = player.lines;
+        document.getElementById('finalScore').innerText = player.score;
+    }
+
+    function update(time = 0) {
+        if (isPaused || isGameOver) return;
+        const deltaTime = time - lastTime;
+        lastTime = time;
+        dropCounter += deltaTime;
+        if (dropCounter > dropInterval) {
+            playerDrop();
+        }
+        draw();
+        animationId = requestAnimationFrame(update);
+    }
+
+    function playerDrop() {
+        player.pos.y++;
+        if (collide(arena, player)) {
+            player.pos.y--;
+            merge(arena, player);
+            soundSystem.sfxDrop(); // Drop sound
+            playerReset();
+            arenaSweep();
+            updateScore();
+        }
+        dropCounter = 0;
+    }
+
+    function playerMove(dir) {
+        player.pos.x += dir;
+        if (collide(arena, player)) {
+            player.pos.x -= dir;
+        } else {
+            soundSystem.sfxMove(); // Move sound
+        }
+        draw();
+    }
+
+    function playerReset() {
+        const pieces = 'ILJOTSZ';
+        const type = pieces[pieces.length * Math.random() | 0];
+        player.matrix = createPiece(type);
+        const colorIndex = (Math.random() * 7 | 0) + 1;
+        player.matrix.forEach(row => row.forEach((v, i) => {
+            if (v !== 0) row[i] = colorIndex;
+        }));
+        player.pos.y = 0;
+        player.pos.x = (arena[0].length / 2 | 0) - (player.matrix[0].length / 2 | 0);
+
+        if (collide(arena, player)) {
+            gameOver();
+        }
+    }
+
+    function playerRotate() {
+        const pos = player.pos.x;
+        let offset = 1;
+        rotate(player.matrix, 1);
+        while (collide(arena, player)) {
+            player.pos.x += offset;
+            offset = -(offset + (offset > 0 ? 1 : -1));
+            if (offset > player.matrix[0].length) {
+                rotate(player.matrix, -1);
+                player.pos.x = pos;
+                return;
+            }
+        }
+        soundSystem.sfxRotate(); // Rotate sound
+        draw();
+    }
+
+    function gameOver() {
+        isGameOver = true;
+        soundSystem.sfxGameOver(); // Game over sound
+        cancelAnimationFrame(animationId);
+        document.getElementById('gameOverModal').style.display = 'block';
+        document.getElementById('startBtn').innerText = 'RESTART';
+    }
+
+    function resetGame() {
+        soundSystem.init(); // Audio init on click
+        soundSystem.startMusic(); // Start music
+
+        arena.forEach(row => row.fill(0));
+        player.score = 0;
+        player.lines = 0;
+        updateScore();
+        
+        isGameOver = false;
+        isPaused = false;
+        document.getElementById('gameOverModal').style.display = 'none';
+        document.getElementById('startBtn').innerText = 'RESET';
+        
+        playerReset();
+        if (animationId) cancelAnimationFrame(animationId);
+        update();
+    }
+    
+    let fastDropInterval = null;
+    function accelerate(active) {
+        if (isGameOver || isPaused) return;
+        if (active) {
+            dropInterval = 50;
+            if(!fastDropInterval) {
+                 playerDrop();
+                 draw();
+            }
+        } else {
+            dropInterval = 1000;
+        }
+    }
+
+    document.addEventListener('keydown', event => {
+        if (isGameOver) return;
+        if (isPaused && event.keyCode !== 80) return;
+
+        if (event.keyCode === 37) { // Left
+            playerMove(-1);
+        } else if (event.keyCode === 39) { // Right
+            playerMove(1);
+        } else if (event.keyCode === 40) { // Down
+            accelerate(true);
+        } else if (event.keyCode === 38) { // Up
+            playerRotate();
+        }
+    });
+
+    document.addEventListener('keyup', event => {
+        if (event.keyCode === 40) {
+            accelerate(false);
+        }
+    });
+
+    draw();
+</script>
+</body>
+</html>
